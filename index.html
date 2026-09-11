@@ -1,0 +1,1722 @@
+<!-- Same as app/src/main/assets/index.html - Standalone Web Bluetooth Single File -->
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>BLE Hardware Controller</title>
+  <style>
+    :root {
+      --bg-dark: #1C1B1F;
+      --bg-card: #2B2930;
+      --bg-card-border: #49454F;
+      --bg-terminal: #141218;
+      --primary: #D0BCFF;
+      --primary-container: #381E72;
+      --primary-container-active: #4F378B;
+      --primary-glow: rgba(208, 188, 255, 0.25);
+      --accent-cyan: #D0BCFF;
+      --accent-rx: #BFC8D4;
+      --accent-green: #80E2B8;
+      --accent-amber: #FFD993;
+      --accent-red: #FFB4AB;
+      --text-main: #E6E1E5;
+      --text-muted: #938F99;
+      --text-dim: #79747E;
+      --radius: 20px;
+      --font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+      --font-mono: "SF Mono", "Fira Code", "Courier New", monospace;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      background-color: var(--bg-dark);
+      color: var(--text-main);
+      font-family: var(--font-family);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      padding: 16px;
+    }
+
+    .app-container {
+      width: 100%;
+      max-width: 480px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      position: relative;
+      padding-bottom: 24px;
+    }
+
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 18px;
+      background: var(--bg-card);
+      border: 1px solid var(--bg-card-border);
+      border-radius: var(--radius);
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .brand-icon {
+      width: 40px;
+      height: 40px;
+      background: var(--primary-container);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .brand-icon svg {
+      width: 22px;
+      height: 22px;
+      fill: var(--primary);
+    }
+
+    .brand-title {
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: var(--primary);
+      letter-spacing: -0.3px;
+    }
+
+    .brand-subtitle {
+      font-size: 0.68rem;
+      color: var(--text-muted);
+      font-family: var(--font-mono);
+      letter-spacing: 1.2px;
+      text-transform: uppercase;
+      font-weight: 500;
+    }
+
+    .sim-badge {
+      font-size: 0.72rem;
+      padding: 6px 12px;
+      border-radius: 20px;
+      background: rgba(73, 69, 79, 0.6);
+      border: 1px solid var(--bg-card-border);
+      color: var(--primary);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      font-weight: 600;
+    }
+
+    .device-banner {
+      display: none;
+      background: var(--bg-card);
+      border: 1px solid var(--bg-card-border);
+      border-radius: var(--radius);
+      padding: 14px 16px;
+      animation: fadeIn 0.3s ease;
+    }
+
+    .device-banner.active {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .device-info-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .device-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: var(--accent-green);
+      box-shadow: 0 0 10px var(--accent-green);
+      animation: pulse 2s infinite;
+    }
+
+    .device-name {
+      font-weight: 600;
+      font-size: 0.95rem;
+    }
+
+    .device-id {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      font-family: var(--font-mono);
+    }
+
+    .view-card {
+      background: var(--bg-card);
+      border: 1px solid var(--bg-card-border);
+      border-radius: var(--radius);
+      padding: 22px 18px;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.35);
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    .section-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .section-title {
+      font-size: 1.15rem;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .back-btn {
+      background: #4A4458;
+      border: 1px solid #7D7588;
+      color: #F5EEFA;
+      border-radius: 10px;
+      padding: 6px 14px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      transition: all 0.2s ease;
+    }
+    .back-btn:hover {
+      background: #5D566E;
+      color: #FFFFFF;
+    }
+
+    .btn {
+      width: 100%;
+      padding: 14px 18px;
+      border-radius: 14px;
+      font-size: 0.95rem;
+      font-weight: 600;
+      border: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      transition: all 0.2s ease;
+      min-height: 48px;
+    }
+
+    .btn:active {
+      transform: scale(0.98);
+    }
+
+    .btn-primary {
+      background: var(--primary-container);
+      color: var(--primary);
+      border: 1px solid rgba(208, 188, 255, 0.2);
+    }
+
+    .btn-primary:active {
+      background: var(--primary-container-active);
+    }
+
+    .btn-secondary {
+      background: rgba(73, 69, 79, 0.4);
+      color: var(--text-main);
+      border: 1px solid var(--bg-card-border);
+    }
+
+    .btn-secondary:hover {
+      background: rgba(73, 69, 79, 0.6);
+    }
+
+    .btn-cyan {
+      background: var(--primary-container);
+      color: var(--primary);
+      border: 1px solid rgba(208, 188, 255, 0.2);
+    }
+
+    .btn-danger {
+      background: rgba(255, 180, 171, 0.15);
+      border: 1px solid rgba(255, 180, 171, 0.4);
+      color: var(--accent-red);
+    }
+
+    .btn-group {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    .scan-hero {
+      text-align: center;
+      padding: 24px 12px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .radar-circle {
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      background: var(--primary-container);
+      border: 2px solid var(--primary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+    }
+
+    .radar-circle.scanning::before {
+      content: '';
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      border: 2px solid var(--primary);
+      animation: ripple 1.5s infinite;
+    }
+
+    .radar-circle svg {
+      width: 38px;
+      height: 38px;
+      fill: var(--primary);
+    }
+
+    .device-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-top: 12px;
+      max-height: 240px;
+      overflow-y: auto;
+    }
+
+    .device-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 14px;
+      background: rgba(73, 69, 79, 0.3);
+      border: 1px solid var(--bg-card-border);
+      border-left: 4px solid var(--primary);
+      border-radius: 14px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .device-item:hover, .device-item:active {
+      background: rgba(73, 69, 79, 0.5);
+      transform: translateX(3px);
+    }
+
+    .device-meta {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .device-item-name {
+      font-weight: 600;
+      font-size: 0.95rem;
+    }
+
+    .device-item-id {
+      font-size: 0.74rem;
+      color: var(--text-muted);
+      font-family: var(--font-mono);
+    }
+
+    .device-connect-tag {
+      font-size: 0.75rem;
+      color: var(--primary);
+      font-weight: 600;
+      font-family: var(--font-mono);
+      letter-spacing: 0.5px;
+    }
+
+    .menu-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .menu-card {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px;
+      background: rgba(73, 69, 79, 0.3);
+      border: 1px solid var(--bg-card-border);
+      border-radius: 16px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .menu-card:hover, .menu-card:active {
+      background: rgba(73, 69, 79, 0.5);
+      border-color: var(--primary);
+      transform: translateY(-2px);
+    }
+
+    .menu-card-left {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .menu-card-icon {
+      width: 44px;
+      height: 44px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--primary-container);
+    }
+
+    .menu-title {
+      font-weight: 600;
+      font-size: 1rem;
+      color: var(--text-main);
+    }
+
+    .menu-desc {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+    }
+
+    .input-box-wrapper {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .label-row {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.85rem;
+      color: var(--text-muted);
+    }
+
+    .id-input-field {
+      width: 100%;
+      background: var(--bg-terminal);
+      border: 1px solid var(--bg-card-border);
+      border-radius: 14px;
+      padding: 14px 16px;
+      color: var(--text-main);
+      font-size: 1.2rem;
+      font-weight: 700;
+      font-family: var(--font-mono);
+      text-align: center;
+      outline: none;
+      transition: border 0.2s;
+    }
+
+    .id-input-field:focus {
+      border-color: var(--primary);
+    }
+
+    .quick-chips {
+      display: flex;
+      gap: 6px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    .chip {
+      background: rgba(73, 69, 79, 0.4);
+      color: var(--text-muted);
+      border: 1px solid var(--bg-card-border);
+      border-radius: 8px;
+      padding: 4px 10px;
+      font-size: 0.78rem;
+      font-family: var(--font-mono);
+      cursor: pointer;
+    }
+
+    .chip:hover {
+      background: var(--primary-container);
+      color: var(--primary);
+    }
+
+    .live-display-container {
+      background: var(--bg-terminal);
+      border: 1px solid var(--bg-card-border);
+      border-radius: 16px;
+      padding: 24px 16px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .live-display-container.streaming {
+      border-color: var(--accent-green);
+      box-shadow: 0 0 18px rgba(128, 226, 184, 0.15);
+    }
+
+    .live-badge {
+      position: absolute;
+      top: 12px;
+      right: 12px;
+      font-size: 0.7rem;
+      font-weight: 700;
+      color: var(--accent-green);
+      background: rgba(128, 226, 184, 0.15);
+      border: 1px solid rgba(128, 226, 184, 0.3);
+      padding: 3px 8px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .live-id-big {
+      font-size: 3.2rem;
+      font-weight: 900;
+      font-family: var(--font-mono);
+      color: var(--primary);
+      letter-spacing: -1px;
+    }
+
+    .live-id-sub {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      font-family: var(--font-mono);
+    }
+
+    .hex-box {
+      background: var(--bg-terminal);
+      border: 1px solid var(--bg-card-border);
+      border-radius: 14px;
+      padding: 12px 14px;
+      font-family: var(--font-mono);
+      font-size: 0.76rem;
+      line-height: 1.5;
+      color: var(--text-main);
+      word-break: break-all;
+      max-height: 140px;
+      overflow-y: auto;
+    }
+
+    .hex-tag-tx {
+      color: var(--primary);
+      font-weight: 700;
+    }
+
+    .hex-tag-rx {
+      color: var(--accent-rx);
+      font-weight: 700;
+    }
+
+    .hex-tag-err {
+      color: var(--accent-red);
+      font-weight: 700;
+    }
+
+    .status-card {
+      background: var(--bg-card);
+      border: 1px solid var(--bg-card-border);
+      border-radius: 14px;
+      padding: 10px 14px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 0.82rem;
+    }
+
+    .status-indicator {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--text-dim);
+      flex-shrink: 0;
+    }
+
+    .status-indicator.ready { background: var(--accent-cyan); }
+    .status-indicator.busy { background: var(--accent-amber); animation: pulse 1s infinite; }
+    .status-indicator.success { background: var(--accent-green); }
+    .status-indicator.error { background: var(--accent-red); }
+
+    .status-text {
+      flex: 1;
+      color: var(--text-muted);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.7);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      z-index: 99;
+      backdrop-filter: blur(4px);
+    }
+
+    .modal-overlay.active {
+      display: flex;
+    }
+
+    .modal-content {
+      background: var(--bg-card);
+      border: 1px solid var(--bg-card-border);
+      border-radius: var(--radius);
+      width: 100%;
+      max-width: 380px;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .modal-title {
+      font-size: 1.1rem;
+      font-weight: 700;
+    }
+
+    .modal-body {
+      font-size: 0.9rem;
+      color: var(--text-muted);
+      line-height: 1.5;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.5; transform: scale(0.9); }
+    }
+
+    @keyframes ripple {
+      0% { transform: scale(0.9); opacity: 1; }
+      100% { transform: scale(1.6); opacity: 0; }
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(-6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="app-container">
+    <header>
+      <div class="brand">
+        <div class="brand-icon">
+          <svg viewBox="0 0 24 24">
+            <path d="M17.71,7.71L12,2h-1v7.59L6.41,5L5,6.41L10.59,12L5,17.59L6.41,19L11,14.41V22h1l5.71-5.71L13.41,12L17.71,7.71z M13,5.83l1.88,1.88L13,9.59V5.83z M14.88,16.29L13,18.17v-3.76L14.88,16.29z"/>
+          </svg>
+        </div>
+        <div>
+          <div class="brand-title">BLE Controller</div>
+          <div class="brand-subtitle">HEX PROTOCOL ENGINE</div>
+        </div>
+      </div>
+      <div class="sim-badge" id="simToggleBtn" title="클릭하여 실제 BLE / 가상 시뮬레이션 모드 전환">
+        <span style="font-size:10px;">⚙️</span>
+        <span id="simBadgeText">시뮬레이터 OFF</span>
+      </div>
+    </header>
+
+    <div class="device-banner" id="deviceBanner">
+      <div class="device-info-left">
+        <div class="device-dot"></div>
+        <div>
+          <div class="device-name" id="connectedDeviceName">SmartRelay-01</div>
+          <div class="device-id" id="connectedDeviceId">UUID: 0000FFE0-0000...</div>
+        </div>
+      </div>
+      <button class="back-btn" id="headerDisconnectBtn" style="color:#F87171; border-color:rgba(239,68,68,0.3)">연결 해제</button>
+    </div>
+
+    <!-- VIEW 1: Bluetooth Scan Screen -->
+    <section class="view-card" id="scanView">
+      <div class="scan-hero">
+        <div class="radar-circle" id="radarCircle">
+          <svg viewBox="0 0 24 24">
+            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm0-14c-3.31 0-6 2.69-6 6 0 1.66.67 3.16 1.76 4.24l1.42-1.42C8.45 14.1 8 13.1 8 12c0-2.21 1.79-4 4-4s4 1.79 4 4c0 1.1-.45 2.1-1.18 2.82l1.42 1.42C17.33 15.16 18 13.66 18 12c0-3.31-2.69-6-6-6zm0 4c-1.1 0-2 .9-2 2 0 .55.22 1.05.59 1.41l1.41-1.41V12z"/>
+          </svg>
+        </div>
+        <div>
+          <h2 style="font-size:1.25rem; font-weight:700; margin-bottom:4px;">기기 검색 및 연결</h2>
+          <p style="font-size:0.82rem; color:var(--text-muted);">주변의 SMCU / SmartRelay BLE 기기를 탐색합니다.</p>
+        </div>
+      </div>
+
+      <button class="btn btn-primary" id="startScanBtn">
+        <svg style="width:20px; height:20px; fill:currentColor;" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
+        블루투스 기기 검색
+      </button>
+
+      <div id="deviceListContainer">
+        <div style="font-size:0.82rem; color:var(--text-dim); margin-bottom:6px; display:flex; justify-content:space-between;">
+          <span>발견된 기기 목록</span>
+          <span id="deviceCountLabel">0개 발견</span>
+        </div>
+        <div class="device-list" id="deviceList">
+          <div style="text-align:center; padding:24px; color:var(--text-dim); font-size:0.85rem;">
+            [블루투스 기기 검색] 버튼을 눌러 스캔을 시작하세요.
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- VIEW 2: Dashboard -->
+    <section class="view-card hidden" id="dashboardView">
+      <div class="section-header">
+        <div class="section-title">
+          <span>대시보드</span>
+        </div>
+        <span style="font-size:0.75rem; color:var(--accent-green);">● 연결 정상</span>
+      </div>
+
+      <p style="font-size:0.84rem; color:var(--text-muted); margin-top:-8px;">
+        설정할 모듈을 선택하거나 작업을 종료하세요.
+      </p>
+
+      <div class="menu-grid">
+        <div class="menu-card" id="menuSmcuBtn">
+          <div class="menu-card-left">
+            <div class="menu-card-icon" style="background:rgba(37,99,235,0.2); color:#60A5FA;">
+              <svg style="width:24px; height:24px; fill:currentColor;" viewBox="0 0 24 24"><path d="M4 6h16v12H4z M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm-6 6h2v4h-2zm-4 0h2v4h-2zm-4 0h2v4H6z"/></svg>
+            </div>
+            <div>
+              <div class="menu-title">SMCU ID 설정</div>
+              <div class="menu-desc">1~31 ID 설정, 체크섬 다운로드 및 업로드</div>
+            </div>
+          </div>
+          <svg style="width:20px; height:20px; fill:var(--text-dim);" viewBox="0 0 24 24"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"/></svg>
+        </div>
+
+        <div class="menu-card" id="menuTcpIpBtn">
+          <div class="menu-card-left">
+            <div class="menu-card-icon" style="background:rgba(37,99,235,0.2); color:#60A5FA;">
+              <svg style="width:24px; height:24px; fill:currentColor;" viewBox="0 0 24 24"><path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/></svg>
+            </div>
+            <div>
+              <div class="menu-title">TCP/IP ID 설정</div>
+              <div class="menu-desc">IP, GW, SUB, MAC 설정</div>
+            </div>
+          </div>
+          <svg style="width:20px; height:20px; fill:var(--text-dim);" viewBox="0 0 24 24"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"/></svg>
+        </div>
+
+        <div class="menu-card" id="menuSmartRelayBtn">
+          <div class="menu-card-left">
+            <div class="menu-card-icon" style="background:rgba(6,182,212,0.2); color:#22D3EE;">
+              <svg style="width:24px; height:24px; fill:currentColor;" viewBox="0 0 24 24"><path d="M12 3C6.48 3 2 7.48 2 13s4.48 10 10 10 10-4.48 10-10S17.52 3 12 3zm1 15h-2v-6h2v6zm0-8h-2V7h2v3z"/></svg>
+            </div>
+            <div>
+              <div class="menu-title">SmartRelay ID 설정</div>
+              <div class="menu-desc">실시간 스트림 시작/중지 및 ID 모니터링</div>
+            </div>
+          </div>
+          <svg style="width:20px; height:20px; fill:var(--text-dim);" viewBox="0 0 24 24"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"/></svg>
+        </div>
+
+        <div class="menu-card" id="menuExitBtn" style="border-color:rgba(239,68,68,0.2);">
+          <div class="menu-card-left">
+            <div class="menu-card-icon" style="background:rgba(239,68,68,0.15); color:#F87171;">
+              <svg style="width:24px; height:24px; fill:currentColor;" viewBox="0 0 24 24"><path d="M13 3h-2v10h2V3zm4.83 2.17l-1.42 1.42C17.99 7.86 19 9.81 19 12c0 3.87-3.13 7-7 7s-7-3.13-7-7c0-2.19 1.01-4.14 2.58-5.42L6.17 5.17C4.23 6.82 3 9.26 3 12c0 4.97 4.03 9 9 9s9-4.03 9-9c0-2.74-1.23-5.18-3.17-6.83z"/></svg>
+            </div>
+            <div>
+              <div class="menu-title" style="color:#FCA5A5;">연결 종료</div>
+              <div class="menu-desc">블루투스 연결을 해제하고 초기 화면으로 이동</div>
+            </div>
+          </div>
+          <svg style="width:20px; height:20px; fill:var(--text-dim);" viewBox="0 0 24 24"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"/></svg>
+        </div>
+      </div>
+
+      <div>
+        <div style="font-size:0.75rem; color:var(--text-dim); margin-bottom:4px; display:flex; justify-content:space-between;">
+          <span>최근 통신 패킷</span>
+          <span style="cursor:pointer; color:var(--accent-cyan);" id="clearLogsBtn">지우기</span>
+        </div>
+        <div class="hex-box" id="recentHexLog">대기 중... 통신 로그가 여기에 표시됩니다.</div>
+      </div>
+    </section>
+
+    <!-- VIEW 3: SMCU ID Setting Screen -->
+    <section class="view-card hidden" id="smcuView">
+      <div class="section-header">
+        <div class="section-title">
+          <span style="color:#60A5FA;">●</span>
+          <span>SMCU ID 설정</span>
+        </div>
+        <button class="back-btn" id="smcuBackBtn">← 대시보드</button>
+      </div>
+
+      <div class="input-box-wrapper">
+        <div class="label-row">
+          <span>설정할 SMCU ID (1 ~ 31)</span>
+          <span id="hexPreviewTag" style="font-family:var(--font-mono); color:var(--accent-cyan);">HEX: 0x01</span>
+        </div>
+        <div style="display:flex; align-items:center; gap:8px;">
+          <button class="btn btn-secondary" id="smcuIdDownBtn" style="width:50px; height:50px; font-size:1.4rem; padding:0; font-weight:bold;">-</button>
+          <input type="number" id="smcuIdInput" class="id-input-field" min="1" max="31" value="1" placeholder="1~31" style="flex:1;">
+          <button class="btn btn-secondary" id="smcuIdUpBtn" style="width:50px; height:50px; font-size:1.3rem; padding:0; font-weight:bold;">+</button>
+        </div>
+        <div style="display:flex; gap:8px; margin-top:8px;">
+          <button class="btn btn-secondary" id="smcuIdDownTextBtn" style="padding:8px 12px; font-size:0.8rem;">▼ ID 다운 (-1)</button>
+          <button class="btn btn-secondary" id="smcuIdUpTextBtn" style="padding:8px 12px; font-size:0.8rem;">▲ ID 업 (+1)</button>
+        </div>
+        <div class="quick-chips">
+          <span class="chip" data-id="1">ID 1</span>
+          <span class="chip" data-id="5">ID 5</span>
+          <span class="chip" data-id="10">ID 10</span>
+          <span class="chip" data-id="16">ID 16</span>
+          <span class="chip" data-id="31">ID 31 (최대)</span>
+        </div>
+      </div>
+
+      <div class="btn-group">
+        <button class="btn btn-primary" id="smcuDownloadBtn">
+          <svg style="width:18px; height:18px; fill:currentColor;" viewBox="0 0 24 24"><path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM17 13l-5 5-5-5h3V9h4v4h3z"/></svg>
+          다운로드 (전송)
+        </button>
+        <button class="btn btn-secondary" id="smcuUploadBtn">
+          <svg style="width:18px; height:18px; fill:currentColor;" viewBox="0 0 24 24"><path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM14 13v4h-4v-4H7l5-5 5 5h-3z"/></svg>
+          업로드 (조회)
+        </button>
+      </div>
+
+      <div style="background:#0D131F; border:1px solid #1E293B; border-radius:12px; padding:14px; text-align:center;">
+        <div style="font-size:0.75rem; color:var(--text-muted); margin-bottom:4px;">기기 수신 SMCU ID (13번째 바이트 / Index 12)</div>
+        <div id="smcuUploadedResult" style="font-size:1.3rem; font-weight:700; color:var(--accent-cyan); font-family:var(--font-mono);">
+          --
+        </div>
+      </div>
+
+      <div style="background:rgba(255,255,255,0.02); border:1px solid #1E293B; border-radius:12px; padding:12px 14px;">
+        <div style="font-size:0.74rem; color:var(--text-muted); font-weight:600; margin-bottom:6px;">패킷 생성 규칙</div>
+        <div style="font-size:0.72rem; color:var(--text-dim); font-family:var(--font-mono); line-height:1.6;">
+          • 바이트 13 (Index 12): <span id="infoSmcuId" style="color:#38BDF8;">0x01</span><br>
+          • 바이트 28 (Index 27): <span id="infoSmcuCs" style="color:#FBBF24;">0xBE</span> (체크섬: 0xBE - (ID - 1))<br>
+          • 길이: 32 Bytes
+        </div>
+      </div>
+
+      <div>
+        <div style="font-size:0.75rem; color:var(--text-dim); margin-bottom:4px;">SMCU 송수신 로그</div>
+        <div class="hex-box" id="smcuHexLog">로그가 없습니다.</div>
+      </div>
+    </section>
+
+    <!-- VIEW 3-1: TCP/IP ID Setting Screen -->
+    <section class="view-card hidden" id="tcpIpView">
+      <div class="section-header">
+        <div class="section-title">
+          <span style="color:#60A5FA;">●</span>
+          <span>TCP/IP ID 설정</span>
+        </div>
+        <button class="back-btn" id="tcpIpBackBtn">← 대시보드</button>
+      </div>
+
+      <p style="font-size:0.82rem; color:var(--text-muted); margin-top:-4px;">
+        IP, GW, SUB, MAC 주소를 설정하고 [다운로드]를 누르면 패킷 2번째(63)부터 27번째(AA)까지 XOR 체크섬을 자동 계산하여 전송합니다.
+      </p>
+
+      <div style="display:flex; flex-direction:column; gap:12px;">
+        <div>
+          <label style="font-size:0.78rem; font-weight:600; color:var(--text-muted); display:block; margin-bottom:4px;">1. IP 주소</label>
+          <input type="text" id="tcpIpInput" class="id-input-field" style="font-size:0.95rem; text-align:left; padding:10px 14px;" value="192.168.10.1">
+        </div>
+        <div>
+          <label style="font-size:0.78rem; font-weight:600; color:var(--text-muted); display:block; margin-bottom:4px;">2. GW (게이트웨이)</label>
+          <input type="text" id="tcpGwInput" class="id-input-field" style="font-size:0.95rem; text-align:left; padding:10px 14px;" value="192.168.10.1">
+        </div>
+        <div>
+          <label style="font-size:0.78rem; font-weight:600; color:var(--text-muted); display:block; margin-bottom:4px;">3. SUB (서브넷 마스크)</label>
+          <input type="text" id="tcpSubInput" class="id-input-field" style="font-size:0.95rem; text-align:left; padding:10px 14px;" value="255.255.255.0">
+        </div>
+        <div>
+          <label style="font-size:0.78rem; font-weight:600; color:var(--text-muted); display:block; margin-bottom:4px;">4. MAC 주소</label>
+          <input type="text" id="tcpMacInput" class="id-input-field" style="font-size:0.95rem; text-align:left; padding:10px 14px;" value="AA. AA. AA. AA. AA. AA">
+        </div>
+      </div>
+
+      <!-- Real-time Packet & Checksum Preview -->
+      <div style="background:#0D131F; border:1px solid #1E293B; border-radius:12px; padding:12px 14px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+          <span style="font-size:0.74rem; color:var(--text-muted); font-weight:600;">실시간 패킷 & XOR 체크섬 (32 Byte)</span>
+          <span id="tcpIpCsBadge" style="background:rgba(59,130,246,0.2); color:#60A5FA; font-family:var(--font-mono); font-size:0.76rem; font-weight:700; padding:2px 8px; border-radius:6px;">CheckSum: 0xBE</span>
+        </div>
+        <div id="tcpIpPacketHex" style="font-family:var(--font-mono); font-size:0.70rem; color:var(--accent-green); word-break:break-all; line-height:1.5;">
+          02 63 FB DE 00 15 12 00 00 C0 A8 0A 01 C0 A8 0A 01 FF FF FF 00 AA AA AA AA AA AA BE 03 03 FC FC
+        </div>
+        <div style="font-size:0.68rem; color:var(--accent-cyan); margin-top:6px; line-height:1.4;">
+          • 패킷 2번째(63) ~ 27번째(AA) XOR 계산 = 28번째 [0xBE] + 03 03 FC FC<br>
+          • 업로드 패킷 (14 Byte): 02 63 FB BE 00 03 01 00 00 24 03 03 FC FC
+        </div>
+      </div>
+
+      <div class="btn-group" style="display:flex; gap:10px;">
+        <button class="btn btn-primary" id="tcpIpDownloadBtn" style="flex:1; height:48px; font-size:0.92rem; font-weight:700;">
+          <svg style="width:18px; height:18px; fill:currentColor;" viewBox="0 0 24 24"><path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM17 13l-5 5-5-5h3V9h4v4h3z"/></svg>
+          다운로드
+        </button>
+        <button class="btn btn-secondary" id="tcpIpUploadBtn" style="flex:1; height:48px; font-size:0.92rem; font-weight:700; background:rgba(6,182,212,0.15); color:var(--accent-cyan); border-color:rgba(6,182,212,0.4);">
+          <svg style="width:18px; height:18px; fill:currentColor;" viewBox="0 0 24 24"><path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM14 13v4h-4v-4H7l5-5 5 5h-3z"/></svg>
+          업로드
+        </button>
+      </div>
+      <div style="display:flex; justify-content:flex-end; margin-top:2px;">
+        <button id="tcpIpResetBtn" style="background:transparent; border:none; color:var(--text-muted); font-size:0.75rem; cursor:pointer; display:flex; align-items:center; gap:4px; padding:4px 8px;">
+          <svg style="width:14px; height:14px; fill:currentColor;" viewBox="0 0 24 24"><path d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/></svg>
+          기본값으로 복원
+        </button>
+      </div>
+
+      <div>
+        <div style="font-size:0.75rem; color:var(--text-dim); margin-bottom:4px;">TCP/IP 송수신 로그</div>
+        <div class="hex-box" id="tcpIpHexLog">로그가 없습니다.</div>
+      </div>
+    </section>
+
+    <!-- VIEW 4: SmartRelay ID Setting Screen -->
+    <section class="view-card hidden" id="smartRelayView">
+      <div class="section-header">
+        <div class="section-title">
+          <span style="color:#22D3EE;">●</span>
+          <span>SmartRelay ID 설정</span>
+        </div>
+        <button class="back-btn" id="smartRelayBackBtn">← 대시보드</button>
+      </div>
+
+      <!-- Section: SmartRelay ID 변경 -->
+      <div class="input-box-wrapper" style="background:#0D131F; border:1px solid #1E293B; border-radius:14px; padding:16px; margin-bottom:14px;">
+        <div class="label-row">
+          <span style="font-weight:600; color:var(--text-main);">SmartRelay ID 변경 (1 ~ 31)</span>
+          <span id="srHexPreviewTag" style="font-family:var(--font-mono); color:var(--accent-cyan); font-weight:600;">HEX: 0x01 (체크섬: 0x41)</span>
+        </div>
+        <div style="display:flex; align-items:center; gap:8px; margin-top:8px;">
+          <button class="btn btn-secondary" id="srIdDownBtn" style="width:50px; height:50px; font-size:1.4rem; padding:0; font-weight:bold;">-</button>
+          <input type="number" id="srIdInput" class="id-input-field" min="1" max="255" value="1" placeholder="1~31" style="flex:1;">
+          <button class="btn btn-secondary" id="srIdUpBtn" style="width:50px; height:50px; font-size:1.3rem; padding:0; font-weight:bold;">+</button>
+        </div>
+        <div style="display:flex; gap:8px; margin-top:8px;">
+          <button class="btn btn-secondary" id="srIdDownTextBtn" style="padding:8px 12px; font-size:0.8rem;">▼ ID 다운 (-1)</button>
+          <button class="btn btn-secondary" id="srIdUpTextBtn" style="padding:8px 12px; font-size:0.8rem;">▲ ID 업 (+1)</button>
+        </div>
+        <div class="quick-chips">
+          <span class="chip sr-chip" data-id="1">ID 1</span>
+          <span class="chip sr-chip" data-id="2">ID 2</span>
+          <span class="chip sr-chip" data-id="5">ID 5</span>
+          <span class="chip sr-chip" data-id="10">ID 10</span>
+          <span class="chip sr-chip" data-id="16">ID 16</span>
+          <span class="chip sr-chip" data-id="31">ID 31</span>
+        </div>
+        <button class="btn btn-primary" id="srDownloadIdBtn" style="margin-top:12px;">
+          <svg style="width:18px; height:18px; fill:currentColor;" viewBox="0 0 24 24"><path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM17 13l-5 5-5-5h3V9h4v4h3z"/></svg>
+          SmartRelay ID 변경 다운로드
+        </button>
+      </div>
+
+      <div class="live-display-container" id="liveDisplayBox">
+        <div class="live-badge" id="streamingBadge" style="display:none;">
+          <span style="display:inline-block; width:6px; height:6px; background:#10B981; border-radius:50%; animation:pulse 1s infinite;"></span>
+          LIVE STREAM
+        </div>
+        <div style="font-size:0.78rem; color:var(--text-muted);">실시간 수신 SmartRelay ID (Index 10)</div>
+        <div class="live-id-big" id="realtimeIdDisplay">--</div>
+        <div class="live-id-sub" id="realtimeIdHex">HEX: --</div>
+      </div>
+
+      <div class="btn-group">
+        <button class="btn btn-cyan" id="srStartBtn">
+          <svg style="width:18px; height:18px; fill:currentColor;" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+          Start (스트림 시작)
+        </button>
+        <button class="btn btn-danger" id="srStopBtn">
+          <svg style="width:18px; height:18px; fill:currentColor;" viewBox="0 0 24 24"><path d="M6 6h12v12H6z"/></svg>
+          Stop (중지 및 복귀)
+        </button>
+      </div>
+
+      <div style="background:rgba(255,255,255,0.02); border:1px solid #1E293B; border-radius:12px; padding:12px 14px;">
+        <div style="font-size:0.74rem; color:var(--text-muted); font-weight:600; margin-bottom:6px;">SmartRelay 프로토콜 정보 (체크섬 적용)</div>
+        <div style="font-size:0.72rem; color:var(--text-dim); font-family:var(--font-mono); line-height:1.6;">
+          • ID 변경: 02 63 FB DC 00 05 01 00 00 00 [ID] [CS] 03 03 FC FC (체크섬: 0x40 ^ ID)<br>
+          • Start 송신: 02 63 FB DC 00 05 01 00 00 00 FF BF 03 03 FC FC<br>
+          • 스트림 수신: 02 FB 63 DC 00 04 01 00 00 00 [ID] 03 03 FC FC<br>
+          • Stop 송신: 02 63 FB DC 00 05 01 00 00 00 00 40 03 03 FC FC
+        </div>
+      </div>
+
+      <div>
+        <div style="font-size:0.75rem; color:var(--text-dim); margin-bottom:4px;">실시간 패킷 스트림 로그</div>
+        <div class="hex-box" id="smartRelayHexLog">Start를 누르면 데이터 스트림이 시작됩니다.</div>
+      </div>
+    </section>
+
+    <!-- Bottom Status Notification -->
+    <div class="status-card">
+      <div class="status-indicator" id="statusDot"></div>
+      <div class="status-text" id="statusMessage">대기 중: 시작하려면 기기 검색을 누르세요.</div>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="alertModal">
+    <div class="modal-content">
+      <div class="modal-title" id="modalTitle">알림</div>
+      <div class="modal-body" id="modalBody">내용</div>
+      <button class="btn btn-primary" id="modalConfirmBtn">확인</button>
+    </div>
+  </div>
+
+  <script>
+    let bluetoothDevice = null;
+    let gattServer = null;
+    let txCharacteristic = null;
+    let rxCharacteristic = null;
+    let isConnected = false;
+    let isSimulationMode = false;
+    let isSmartRelayStreaming = false;
+    let simStreamInterval = null;
+    let lastReceivedPacket = null;
+
+    const SIMULATED_DEVICES = [
+      { name: "SmartRelay-Pro", id: "00:1A:7D:DA:71:02", rssi: -58 },
+      { name: "SMCU-Controller-01", id: "C4:4E:AC:12:34:56", rssi: -64 },
+      { name: "SMCU-Gateway-V2", id: "D8:A0:1D:9F:8B:11", rssi: -72 },
+      { name: "SmartRelay-Mini-04", id: "00:1A:7D:EE:22:91", rssi: -78 },
+      { name: "SMCU-SensorNode-09", id: "B8:27:EB:45:67:89", rssi: -81 },
+      { name: "SmartRelay-Dual-02", id: "00:1A:7D:BC:11:44", rssi: -83 },
+      { name: "SMCU-Monitor-03", id: "C4:4E:AC:78:90:12", rssi: -86 },
+      { name: "SmartRelay-8CH-01", id: "00:1A:7D:AA:33:10", rssi: -89 },
+      { name: "SMCU-Logger-02", id: "D8:A0:1D:33:44:55", rssi: -92 },
+      { name: "SmartRelay-Edge-05", id: "00:1A:7D:FA:88:99", rssi: -94 }
+    ];
+
+    const scanView = document.getElementById('scanView');
+    const dashboardView = document.getElementById('dashboardView');
+    const smcuView = document.getElementById('smcuView');
+    const tcpIpView = document.getElementById('tcpIpView');
+    const smartRelayView = document.getElementById('smartRelayView');
+    const deviceBanner = document.getElementById('deviceBanner');
+    const connectedDeviceName = document.getElementById('connectedDeviceName');
+    const connectedDeviceId = document.getElementById('connectedDeviceId');
+    const statusDot = document.getElementById('statusDot');
+    const statusMessage = document.getElementById('statusMessage');
+    const radarCircle = document.getElementById('radarCircle');
+    const deviceList = document.getElementById('deviceList');
+    const deviceCountLabel = document.getElementById('deviceCountLabel');
+    const simBadgeText = document.getElementById('simBadgeText');
+    const simToggleBtn = document.getElementById('simToggleBtn');
+    const alertModal = document.getElementById('alertModal');
+    const modalTitle = document.getElementById('modalTitle');
+    const modalBody = document.getElementById('modalBody');
+    const modalConfirmBtn = document.getElementById('modalConfirmBtn');
+
+    if (!navigator.bluetooth) {
+      isSimulationMode = true;
+      simBadgeText.textContent = "시뮬레이터 ON (WebBLE 미지원 환경)";
+      simBadgeText.style.color = "var(--accent-green)";
+    }
+
+    function showModal(title, text) {
+      modalTitle.textContent = title;
+      modalBody.innerHTML = text;
+      alertModal.classList.add('active');
+    }
+
+    modalConfirmBtn.addEventListener('click', () => {
+      alertModal.classList.remove('active');
+    });
+
+    function setStatus(text, type = 'ready') {
+      statusMessage.textContent = text;
+      statusDot.className = 'status-indicator ' + type;
+    }
+
+    function bytesToHex(uint8Arr) {
+      return Array.from(uint8Arr).map(b => b.toString(16).padStart(2, '0').toUpperCase()).join(' ');
+    }
+
+    function appendLog(logElemId, text, type = 'info') {
+      const elem = document.getElementById(logElemId);
+      if (!elem) return;
+      const timestamp = new Date().toTimeString().split(' ')[0];
+      let prefix = '';
+      if (type === 'tx') prefix = '<span class="hex-tag-tx">[TX]</span> ';
+      else if (type === 'rx') prefix = '<span class="hex-tag-rx">[RX]</span> ';
+      else if (type === 'err') prefix = '<span class="hex-tag-err">[ERR]</span> ';
+      else prefix = `<span style="color:#94A3B8;">[${timestamp}]</span> `;
+
+      if (elem.innerHTML.includes('대기 중') || elem.innerHTML.includes('로그가 없습니다')) {
+        elem.innerHTML = '';
+      }
+      elem.innerHTML = `${prefix}${text}<br>` + elem.innerHTML;
+    }
+
+    simToggleBtn.addEventListener('click', () => {
+      isSimulationMode = !isSimulationMode;
+      if (isSimulationMode) {
+        simBadgeText.textContent = "시뮬레이터 ON";
+        simBadgeText.style.color = "var(--accent-green)";
+        setStatus("가상 하드웨어 시뮬레이션 모드가 활성화되었습니다.", "success");
+      } else {
+        if (!navigator.bluetooth) {
+          showModal("Web Bluetooth 미지원", "현재 브라우저는 Web Bluetooth API를 지원하지 않습니다. 시뮬레이션 모드를 유지하거나 Chrome/Edge 브라우저에서 실행해 주세요.");
+          isSimulationMode = true;
+          return;
+        }
+        simBadgeText.textContent = "시뮬레이터 OFF";
+        simBadgeText.style.color = "var(--accent-cyan)";
+        setStatus("실제 BLE 기기 탐색 모드로 전환되었습니다.", "ready");
+      }
+    });
+
+    function showView(viewId) {
+      [scanView, dashboardView, smcuView, tcpIpView, smartRelayView].forEach(v => v.classList.add('hidden'));
+      document.getElementById(viewId).classList.remove('hidden');
+    }
+
+    const startScanBtn = document.getElementById('startScanBtn');
+
+    startScanBtn.addEventListener('click', async () => {
+      setStatus("기기 검색 중...", "busy");
+      radarCircle.classList.add('scanning');
+      deviceList.innerHTML = '<div style="text-align:center; padding:18px; color:var(--accent-cyan);">검색 중입니다...</div>';
+
+      if (isSimulationMode) {
+        setTimeout(() => {
+          radarCircle.classList.remove('scanning');
+          renderDeviceList(SIMULATED_DEVICES);
+          setStatus(`검색 완료: ${SIMULATED_DEVICES.length}개 기기 발견`, "success");
+        }, 800);
+      } else {
+        try {
+          const device = await navigator.bluetooth.requestDevice({
+            acceptAllDevices: true,
+            optionalServices: [
+              '6e400001-b5a3-f393-e0a9-e50e24dcca9e',
+              '0000ffe0-0000-1000-8000-00805f9b34fb',
+              0xFFE0,
+              0xFFE5
+            ]
+          });
+
+          radarCircle.classList.remove('scanning');
+          if (device) {
+            renderDeviceList([{
+              name: device.name || "알 수 없는 기기",
+              id: device.id,
+              realDevice: device
+            }]);
+            setStatus(`기기 선택됨: ${device.name || device.id}`, "success");
+          }
+        } catch (err) {
+          radarCircle.classList.remove('scanning');
+          if (err.name === 'NotFoundError') {
+            setStatus("기기 검색이 취소되었습니다.", "ready");
+            deviceList.innerHTML = '<div style="text-align:center; padding:18px; color:var(--text-dim);">검색이 취소되었습니다. 다시 시도해 주세요.</div>';
+          } else {
+            setStatus(`검색 에러: ${err.message}`, "error");
+            deviceList.innerHTML = `<div style="text-align:center; padding:18px; color:#F87171;">오류: ${err.message}</div>`;
+          }
+        }
+      }
+    });
+
+    function renderDeviceList(devices) {
+      deviceCountLabel.textContent = `${devices.length}개 발견`;
+      deviceList.innerHTML = '';
+
+      devices.forEach(dev => {
+        const item = document.createElement('div');
+        item.className = 'device-item';
+        item.innerHTML = `
+          <div class="device-meta">
+            <div class="device-item-name">${dev.name}</div>
+            <div class="device-item-id">${dev.id}</div>
+          </div>
+          <div class="device-connect-tag">연결하기 →</div>
+        `;
+        item.addEventListener('click', () => connectToDevice(dev));
+        deviceList.appendChild(item);
+      });
+    }
+
+    async function connectToDevice(deviceInfo) {
+      setStatus(`기기 연결 시도 중 (${deviceInfo.name})...`, "busy");
+
+      if (isSimulationMode) {
+        setTimeout(() => {
+          isConnected = true;
+          bluetoothDevice = { name: deviceInfo.name, id: deviceInfo.id };
+          onConnectedSuccess(deviceInfo.name, deviceInfo.id);
+        }, 600);
+      } else {
+        try {
+          const dev = deviceInfo.realDevice;
+          bluetoothDevice = dev;
+          dev.addEventListener('gattserverdisconnected', onDisconnected);
+          gattServer = await dev.gatt.connect();
+
+          const services = await gattServer.getPrimaryServices();
+          for (const service of services) {
+            const characteristics = await service.getCharacteristics();
+            for (const char of characteristics) {
+              if (char.properties.notify || char.properties.indicate) {
+                rxCharacteristic = char;
+                await rxCharacteristic.startNotifications();
+                rxCharacteristic.addEventListener('characteristicvaluechanged', handleIncomingBleData);
+              }
+              if (char.properties.write || char.properties.writeWithoutResponse) {
+                txCharacteristic = char;
+              }
+            }
+          }
+
+          isConnected = true;
+          onConnectedSuccess(dev.name || "Bluetooth Device", dev.id);
+        } catch (err) {
+          isConnected = false;
+          setStatus(`연결 실패: ${err.message}`, "error");
+          showModal("연결 오류", `블루투스 기기 연결에 실패하였습니다:<br><b style="color:#F87171;">${err.message}</b>`);
+        }
+      }
+    }
+
+    function onConnectedSuccess(name, id) {
+      connectedDeviceName.textContent = name;
+      connectedDeviceId.textContent = `ID: ${id}`;
+      deviceBanner.classList.add('active');
+      setStatus(`연결 성공: ${name}`, "success");
+      showView('dashboardView');
+      appendLog('recentHexLog', `기기 연결 완료 (${name} [${id}])`, 'info');
+    }
+
+    function handleIncomingBleData(event) {
+      const value = event.target.value;
+      const uint8 = new Uint8Array(value.buffer);
+      processReceivedBytes(uint8);
+    }
+
+    function processReceivedBytes(uint8) {
+      lastReceivedPacket = uint8;
+      const hexStr = bytesToHex(uint8);
+
+      appendLog('recentHexLog', hexStr, 'rx');
+      appendLog('smcuHexLog', hexStr, 'rx');
+      appendLog('tcpIpHexLog', hexStr, 'rx');
+      appendLog('smartRelayHexLog', hexStr, 'rx');
+
+      if (uint8.length >= 11) {
+        if (uint8[0] === 0x02 && (uint8[1] === 0xFB || uint8[2] === 0x63 || uint8.length <= 16)) {
+          const parsedId = uint8[10];
+          updateRealtimeSmartRelayId(parsedId);
+        }
+      }
+
+      // TCP/IP packet parsing (32 bytes response)
+      if (uint8.length >= 27 && uint8[0] === 0x02) {
+        const ip = `${uint8[9]}.${uint8[10]}.${uint8[11]}.${uint8[12]}`;
+        const gw = `${uint8[13]}.${uint8[14]}.${uint8[15]}.${uint8[16]}`;
+        const sub = `${uint8[17]}.${uint8[18]}.${uint8[19]}.${uint8[20]}`;
+        const macParts = [];
+        for (let i = 21; i <= 26; i++) {
+          macParts.push(uint8[i].toString(16).padStart(2, '0').toUpperCase());
+        }
+        const mac = macParts.join('. ');
+
+        if (!tcpIpView.classList.contains('hidden')) {
+          tcpIpInput.value = ip;
+          tcpGwInput.value = gw;
+          tcpSubInput.value = sub;
+          tcpMacInput.value = mac;
+          updateTcpIpCalculations();
+          appendLog('tcpIpHexLog', `업로드 수신 적용: IP=${ip}, GW=${gw}, SUB=${sub}, MAC=${mac}`, 'info');
+        }
+      }
+    }
+
+    function updateRealtimeSmartRelayId(idVal) {
+      const idDisplay = document.getElementById('realtimeIdDisplay');
+      const idHex = document.getElementById('realtimeIdHex');
+      idDisplay.textContent = idVal;
+      idHex.textContent = `HEX: 0x${idVal.toString(16).padStart(2, '0').toUpperCase()} (DEC: ${idVal})`;
+    }
+
+    async function sendHexPayload(payloadArray, contextLogId = 'recentHexLog') {
+      const uint8 = new Uint8Array(payloadArray);
+      const hexStr = bytesToHex(uint8);
+
+      appendLog(contextLogId, hexStr, 'tx');
+      if (contextLogId !== 'recentHexLog') {
+        appendLog('recentHexLog', hexStr, 'tx');
+      }
+
+      if (isSimulationMode) {
+        setStatus(`[시뮬레이터] 패킷 전송: ${uint8.length} 바이트`, "success");
+        return true;
+      }
+
+      if (!isConnected || !gattServer || !gattServer.connected) {
+        throw new Error("블루투스 기기가 연결되어 있지 않습니다.");
+      }
+
+      if (txCharacteristic) {
+        if (txCharacteristic.properties.writeWithoutResponse) {
+          await txCharacteristic.writeValueWithoutResponse(uint8);
+        } else {
+          await txCharacteristic.writeValue(uint8);
+        }
+        setStatus(`패킷 전송 성공 (${uint8.length} Bytes)`, "success");
+        return true;
+      } else {
+        throw new Error("쓰기 가능한 BLE Characteristic을 찾을 수 없습니다.");
+      }
+    }
+
+    // Feature 1: SMCU ID
+    const smcuIdInput = document.getElementById('smcuIdInput');
+    const hexPreviewTag = document.getElementById('hexPreviewTag');
+    const infoSmcuId = document.getElementById('infoSmcuId');
+    const infoSmcuCs = document.getElementById('infoSmcuCs');
+    const smcuDownloadBtn = document.getElementById('smcuDownloadBtn');
+    const smcuUploadBtn = document.getElementById('smcuUploadBtn');
+    const smcuUploadedResult = document.getElementById('smcuUploadedResult');
+
+    function updateSmcuCalculations() {
+      let id = parseInt(smcuIdInput.value, 10);
+      if (isNaN(id) || id < 1) id = 1;
+      if (id > 31) id = 31;
+
+      const idHex = '0x' + id.toString(16).padStart(2, '0').toUpperCase();
+      const cs = 0xBE - (id - 1);
+      const csHex = '0x' + cs.toString(16).padStart(2, '0').toUpperCase();
+
+      hexPreviewTag.textContent = `HEX: ${idHex}`;
+      infoSmcuId.textContent = idHex;
+      infoSmcuCs.textContent = `${csHex} (${cs})`;
+      return { id, cs };
+    }
+
+    smcuIdInput.addEventListener('input', updateSmcuCalculations);
+
+    function stepSmcuId(delta) {
+      let current = parseInt(smcuIdInput.value, 10);
+      if (isNaN(current)) current = 1;
+      let next = current + delta;
+      if (next < 1) next = 1;
+      if (next > 31) next = 31;
+      smcuIdInput.value = next;
+      updateSmcuCalculations();
+    }
+
+    document.getElementById('smcuIdDownBtn')?.addEventListener('click', () => stepSmcuId(-1));
+    document.getElementById('smcuIdUpBtn')?.addEventListener('click', () => stepSmcuId(1));
+    document.getElementById('smcuIdDownTextBtn')?.addEventListener('click', () => stepSmcuId(-1));
+    document.getElementById('smcuIdUpTextBtn')?.addEventListener('click', () => stepSmcuId(1));
+
+    document.querySelectorAll('.chip:not(.sr-chip)').forEach(chip => {
+      chip.addEventListener('click', () => {
+        smcuIdInput.value = chip.getAttribute('data-id');
+        updateSmcuCalculations();
+      });
+    });
+
+    smcuDownloadBtn.addEventListener('click', async () => {
+      const { id, cs } = updateSmcuCalculations();
+      const payload = [
+        0x02, 0x63, 0xFB, 0xDE, 0x00, 0x15, 0x12, 0x00, 0x00, 0xC0, 0xA8, 0x0A,
+        id,
+        0xC0, 0xA8, 0x0A, 0x01, 0xFF, 0xFF, 0xFF, 0x00, 0xAA, 0xAA, 0xAA, 0xAA, 0xAA, 0xAA,
+        cs,
+        0x03, 0x03, 0xFC, 0xFC
+      ];
+
+      try {
+        await sendHexPayload(payload, 'smcuHexLog');
+        setStatus(`SMCU 다운로드 완료: ID=${id} (체크섬=${'0x' + cs.toString(16).toUpperCase()})`, "success");
+
+        if (isSimulationMode) {
+          setTimeout(() => {
+            const simAck = new Uint8Array(payload);
+            processReceivedBytes(simAck);
+          }, 300);
+        }
+      } catch (err) {
+        setStatus(`다운로드 실패: ${err.message}`, "error");
+        appendLog('smcuHexLog', `오류: ${err.message}`, 'err');
+      }
+    });
+
+    smcuUploadBtn.addEventListener('click', () => {
+      if (!lastReceivedPacket || lastReceivedPacket.length < 13) {
+        if (isSimulationMode) {
+          const currentId = parseInt(smcuIdInput.value, 10) || 1;
+          const mockPacket = new Uint8Array([
+            0x02, 0x63, 0xFB, 0xDE, 0x00, 0x15, 0x12, 0x00, 0x00, 0xC0, 0xA8, 0x0A,
+            currentId,
+            0xC0, 0xA8, 0x0A, 0x01, 0xFF, 0xFF, 0xFF, 0x00, 0xAA, 0xAA, 0xAA, 0xAA, 0xAA, 0xAA,
+            0xBE - (currentId - 1), 0x03, 0x03, 0xFC, 0xFC
+          ]);
+          processReceivedBytes(mockPacket);
+        } else {
+          showModal("데이터 없음", "기기로부터 수신된 데이터가 없습니다. 먼저 다운로드를 전송하거나 기기의 응답을 기다려 주세요.");
+          return;
+        }
+      }
+
+      const extractedByte = lastReceivedPacket[12];
+      const hexVal = '0x' + extractedByte.toString(16).padStart(2, '0').toUpperCase();
+      smcuUploadedResult.textContent = `${hexVal} (십진수: ${extractedByte})`;
+      setStatus(`SMCU 업로드 조회 완료: Index 12 = ${hexVal}`, "success");
+      appendLog('smcuHexLog', `업로드 파싱 성공: 13번째 바이트 = ${hexVal}`, 'info');
+    });
+
+    // Feature 1-1: TCP/IP ID Setting & XOR Checksum
+    const tcpIpInput = document.getElementById('tcpIpInput');
+    const tcpGwInput = document.getElementById('tcpGwInput');
+    const tcpSubInput = document.getElementById('tcpSubInput');
+    const tcpMacInput = document.getElementById('tcpMacInput');
+    const tcpIpCsBadge = document.getElementById('tcpIpCsBadge');
+    const tcpIpPacketHex = document.getElementById('tcpIpPacketHex');
+    const tcpIpDownloadBtn = document.getElementById('tcpIpDownloadBtn');
+    const tcpIpUploadBtn = document.getElementById('tcpIpUploadBtn');
+    const tcpIpResetBtn = document.getElementById('tcpIpResetBtn');
+
+    const TCP_IP_UPLOAD_PACKET = [
+      0x02, 0x63, 0xFB, 0xBE, 0x00, 0x03, 0x01, 0x00, 0x00, 0x24, 0x03, 0x03, 0xFC, 0xFC
+    ];
+
+    function parseIp(str, def) {
+      const parts = str.trim().split('.');
+      if (parts.length === 4) {
+        const bytes = parts.map(p => parseInt(p.trim(), 10));
+        if (bytes.every(b => !isNaN(b) && b >= 0 && b <= 255)) return bytes;
+      }
+      return def;
+    }
+
+    function parseMac(str) {
+      const clean = str.replace(/[^0-9A-Fa-f]/g, '');
+      if (clean.length === 12) {
+        const bytes = [];
+        for (let i = 0; i < 12; i += 2) {
+          bytes.push(parseInt(clean.substring(i, i + 2), 16));
+        }
+        return bytes;
+      }
+      return [0xAA, 0xAA, 0xAA, 0xAA, 0xAA, 0xAA];
+    }
+
+    function updateTcpIpCalculations() {
+      const ip = parseIp(tcpIpInput.value, [192, 168, 10, 1]);
+      const gw = parseIp(tcpGwInput.value, [192, 168, 10, 1]);
+      const sub = parseIp(tcpSubInput.value, [255, 255, 255, 0]);
+      const mac = parseMac(tcpMacInput.value);
+
+      const packet = [
+        0x02, 0x63, 0xFB, 0xDE, 0x00, 0x15, 0x12, 0x00, 0x00,
+        ...ip,
+        ...gw,
+        ...sub,
+        ...mac,
+        0x00, // index 27 (checksum placeholder)
+        0x03, 0x03, 0xFC, 0xFC
+      ];
+
+      // XOR from 2nd byte (index 1) to 27th byte (index 26)
+      let cs = 0;
+      for (let i = 1; i <= 26; i++) {
+        cs ^= packet[i];
+      }
+      packet[27] = cs;
+
+      const csHex = '0x' + cs.toString(16).padStart(2, '0').toUpperCase();
+      tcpIpCsBadge.textContent = `CheckSum: ${csHex}`;
+
+      const hexFormatted = packet.map(b => b.toString(16).padStart(2, '0').toUpperCase()).join(' ');
+      tcpIpPacketHex.textContent = hexFormatted;
+
+      return { packet, cs, csHex };
+    }
+
+    [tcpIpInput, tcpGwInput, tcpSubInput, tcpMacInput].forEach(el => {
+      el.addEventListener('input', updateTcpIpCalculations);
+    });
+
+    tcpIpResetBtn.addEventListener('click', () => {
+      tcpIpInput.value = "192.168.10.1";
+      tcpGwInput.value = "192.168.10.1";
+      tcpSubInput.value = "255.255.255.0";
+      tcpMacInput.value = "AA. AA. AA. AA. AA. AA";
+      updateTcpIpCalculations();
+      setStatus("TCP/IP 설정값이 기본값으로 복원되었습니다.", "ready");
+    });
+
+    tcpIpDownloadBtn.addEventListener('click', async () => {
+      const { packet, cs, csHex } = updateTcpIpCalculations();
+      try {
+        await sendHexPayload(packet, 'tcpIpHexLog');
+        setStatus(`TCP/IP 다운로드 완료 (체크섬: ${csHex})`, "success");
+
+        if (isSimulationMode) {
+          setTimeout(() => {
+            const simAck = new Uint8Array(packet);
+            processReceivedBytes(simAck);
+          }, 300);
+        }
+      } catch (err) {
+        setStatus(`다운로드 실패: ${err.message}`, "error");
+        appendLog('tcpIpHexLog', `오류: ${err.message}`, 'err');
+      }
+    });
+
+    tcpIpUploadBtn.addEventListener('click', async () => {
+      try {
+        await sendHexPayload(TCP_IP_UPLOAD_PACKET, 'tcpIpHexLog');
+        setStatus("TCP/IP 업로드 조회 패킷 전송됨 (14 바이트)", "busy");
+
+        if (isSimulationMode) {
+          setTimeout(() => {
+            const { packet } = updateTcpIpCalculations();
+            const simResp = new Uint8Array(packet);
+            processReceivedBytes(simResp);
+            setStatus("TCP/IP 업로드 조회 완료", "success");
+            appendLog('tcpIpHexLog', "업로드 응답 수신 완료", 'info');
+          }, 350);
+        }
+      } catch (err) {
+        setStatus(`업로드 실패: ${err.message}`, "error");
+        appendLog('tcpIpHexLog', `오류: ${err.message}`, 'err');
+      }
+    });
+
+    // Feature 2: SmartRelay ID
+    const srStartBtn = document.getElementById('srStartBtn');
+    const srStopBtn = document.getElementById('srStopBtn');
+    const liveDisplayBox = document.getElementById('liveDisplayBox');
+    const streamingBadge = document.getElementById('streamingBadge');
+    const srIdInput = document.getElementById('srIdInput');
+    const srHexPreviewTag = document.getElementById('srHexPreviewTag');
+    const srDownloadIdBtn = document.getElementById('srDownloadIdBtn');
+
+    function updateSmartRelayCalculations() {
+      let id = parseInt(srIdInput.value, 10);
+      if (isNaN(id) || id < 1) id = 1;
+      if (id > 255) id = 255;
+
+      const idHex = '0x' + id.toString(16).padStart(2, '0').toUpperCase();
+      // XOR checksum: 0x63^0xFB^0xDC^0x00^0x05^0x01^0x00^0x00^0x00^id = 0x40 ^ id
+      const cs = (0x40 ^ id) & 0xFF;
+      const csHex = '0x' + cs.toString(16).padStart(2, '0').toUpperCase();
+
+      if (srHexPreviewTag) {
+        srHexPreviewTag.textContent = `HEX: ${idHex} (체크섬: ${csHex})`;
+      }
+      return { id, cs };
+    }
+
+    function stepSmartRelayId(delta) {
+      let current = parseInt(srIdInput.value, 10);
+      if (isNaN(current)) current = 1;
+      let next = current + delta;
+      if (next < 1) next = 1;
+      if (next > 255) next = 255;
+      srIdInput.value = next;
+      updateSmartRelayCalculations();
+    }
+
+    srIdInput?.addEventListener('input', updateSmartRelayCalculations);
+    document.getElementById('srIdDownBtn')?.addEventListener('click', () => stepSmartRelayId(-1));
+    document.getElementById('srIdUpBtn')?.addEventListener('click', () => stepSmartRelayId(1));
+    document.getElementById('srIdDownTextBtn')?.addEventListener('click', () => stepSmartRelayId(-1));
+    document.getElementById('srIdUpTextBtn')?.addEventListener('click', () => stepSmartRelayId(1));
+
+    document.querySelectorAll('.sr-chip').forEach(chip => {
+      chip.addEventListener('click', () => {
+        srIdInput.value = chip.getAttribute('data-id');
+        updateSmartRelayCalculations();
+      });
+    });
+
+    srDownloadIdBtn?.addEventListener('click', async () => {
+      const { id, cs } = updateSmartRelayCalculations();
+      // 16-byte packet: 02 63 FB DC 00 05 01 00 00 00 [ID] [CS] 03 03 FC FC
+      const packet = [
+        0x02, 0x63, 0xFB, 0xDC, 0x00, 0x05, 0x01, 0x00, 0x00, 0x00,
+        id,
+        cs,
+        0x03, 0x03, 0xFC, 0xFC
+      ];
+
+      try {
+        await sendHexPayload(packet, 'smartRelayHexLog');
+        setStatus(`SmartRelay ID 변경 패킷 전송 완료: ID=${id} (체크섬=${'0x' + cs.toString(16).toUpperCase()})`, "success");
+
+        if (isSimulationMode) {
+          setTimeout(() => {
+            const realtimeIdDisplay = document.getElementById('realtimeIdDisplay');
+            const realtimeIdHex = document.getElementById('realtimeIdHex');
+            if (realtimeIdDisplay) realtimeIdDisplay.textContent = id.toString();
+            if (realtimeIdHex) realtimeIdHex.textContent = `HEX: 0x${id.toString(16).padStart(2, '0').toUpperCase()} (DEC: ${id})`;
+            appendLog('smartRelayHexLog', `ID 변경 적용 완료: ID = ${id}`, 'info');
+          }, 300);
+        }
+      } catch (err) {
+        setStatus(`SmartRelay ID 변경 실패: ${err.message}`, "error");
+        appendLog('smartRelayHexLog', `오류: ${err.message}`, 'err');
+      }
+    });
+
+    const SMART_RELAY_START_PACKET = [
+      0x02, 0x63, 0xFB, 0xDC, 0x00, 0x05, 0x01, 0x00, 0x00, 0x00, 0xFF, 0xBF, 0x03, 0x03, 0xFC, 0xFC
+    ];
+
+    const SMART_RELAY_STOP_PACKET = [
+      0x02, 0x63, 0xFB, 0xDC, 0x00, 0x05, 0x01, 0x00, 0x00, 0x00, 0x00, 0x40, 0x03, 0x03, 0xFC, 0xFC
+    ];
+
+    srStartBtn.addEventListener('click', async () => {
+      try {
+        await sendHexPayload(SMART_RELAY_START_PACKET, 'smartRelayHexLog');
+        isSmartRelayStreaming = true;
+        liveDisplayBox.classList.add('streaming');
+        streamingBadge.style.display = 'flex';
+        setStatus("SmartRelay 스트림 시작 패킷 전송됨. 데이터 수신 대기 중...", "busy");
+
+        if (isSimulationMode) {
+          let simCounter = 1;
+          if (simStreamInterval) clearInterval(simStreamInterval);
+          simStreamInterval = setInterval(() => {
+            if (!isSmartRelayStreaming) return;
+            const simId = (simCounter % 31) + 1;
+            simCounter++;
+            const streamPacket = new Uint8Array([
+              0x02, 0xFB, 0x63, 0xDC, 0x00, 0x04, 0x01, 0x00, 0x00, 0x00,
+              simId,
+              0x03, 0x03, 0xFC, 0xFC
+            ]);
+            processReceivedBytes(streamPacket);
+          }, 1200);
+        }
+      } catch (err) {
+        setStatus(`Start 전송 오류: ${err.message}`, "error");
+        appendLog('smartRelayHexLog', `오류: ${err.message}`, 'err');
+      }
+    });
+
+    srStopBtn.addEventListener('click', async () => {
+      try {
+        await sendHexPayload(SMART_RELAY_STOP_PACKET, 'smartRelayHexLog');
+        stopSmartRelayStream();
+        setStatus("SmartRelay 중지 패킷 전송 완료. 대시보드로 복귀합니다.", "success");
+        setTimeout(() => {
+          showView('dashboardView');
+        }, 400);
+      } catch (err) {
+        setStatus(`Stop 전송 오류: ${err.message}`, "error");
+        appendLog('smartRelayHexLog', `오류: ${err.message}`, 'err');
+      }
+    });
+
+    function stopSmartRelayStream() {
+      isSmartRelayStreaming = false;
+      liveDisplayBox.classList.remove('streaming');
+      streamingBadge.style.display = 'none';
+      if (simStreamInterval) {
+        clearInterval(simStreamInterval);
+        simStreamInterval = null;
+      }
+    }
+
+    function disconnectDevice() {
+      stopSmartRelayStream();
+      if (bluetoothDevice && bluetoothDevice.gatt && bluetoothDevice.gatt.connected) {
+        bluetoothDevice.gatt.disconnect();
+      }
+      onDisconnected();
+    }
+
+    function onDisconnected() {
+      isConnected = false;
+      bluetoothDevice = null;
+      gattServer = null;
+      txCharacteristic = null;
+      rxCharacteristic = null;
+      stopSmartRelayStream();
+
+      deviceBanner.classList.remove('active');
+      showView('scanView');
+      setStatus("블루투스 연결이 완전히 해제되었습니다.", "ready");
+      appendLog('recentHexLog', "연결 종료됨 (초기 화면 복귀)", 'info');
+    }
+
+    document.getElementById('menuExitBtn').addEventListener('click', disconnectDevice);
+    document.getElementById('headerDisconnectBtn').addEventListener('click', disconnectDevice);
+
+    document.getElementById('menuSmcuBtn').addEventListener('click', () => {
+      updateSmcuCalculations();
+      showView('smcuView');
+    });
+
+    document.getElementById('menuTcpIpBtn').addEventListener('click', () => {
+      updateTcpIpCalculations();
+      showView('tcpIpView');
+    });
+
+    document.getElementById('menuSmartRelayBtn').addEventListener('click', () => {
+      showView('smartRelayView');
+    });
+
+    document.getElementById('smcuBackBtn').addEventListener('click', () => {
+      showView('dashboardView');
+    });
+
+    document.getElementById('tcpIpBackBtn').addEventListener('click', () => {
+      showView('dashboardView');
+    });
+
+    document.getElementById('smartRelayBackBtn').addEventListener('click', () => {
+      if (isSmartRelayStreaming) {
+        stopSmartRelayStream();
+      }
+      showView('dashboardView');
+    });
+
+    document.getElementById('clearLogsBtn').addEventListener('click', () => {
+      document.getElementById('recentHexLog').innerHTML = '로그가 초기화되었습니다.';
+    });
+
+    updateSmcuCalculations();
+  </script>
+</body>
+</html>
