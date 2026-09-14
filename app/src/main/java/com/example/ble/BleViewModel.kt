@@ -131,6 +131,8 @@ class BleViewModel(application: Application) : AndroidViewModel(application) {
     val smartRelayTargetId: StateFlow<Int> = _smartRelayTargetId.asStateFlow()
 
     private var smartRelayStreamJob: Job? = null
+    private var activeScanCallback: ScanCallback? = null
+    private var scanJob: Job? = null
 
     // Internal BLE handles
     private var bluetoothGatt: BluetoothGatt? = null
@@ -208,7 +210,25 @@ class BleViewModel(application: Application) : AndroidViewModel(application) {
     // Scanning Flow
     // -------------------------------------------------------------
     @SuppressLint("MissingPermission")
+    fun stopScan() {
+        scanJob?.cancel()
+        scanJob = null
+        activeScanCallback?.let { cb ->
+            try {
+                bluetoothAdapter?.bluetoothLeScanner?.stopScan(cb)
+            } catch (_: Exception) {}
+        }
+        activeScanCallback = null
+        if (_connectionState.value is BleConnectionState.Scanning) {
+            _connectionState.value = BleConnectionState.Disconnected
+        }
+    }
+
+    @SuppressLint("MissingPermission")
     fun startScan() {
+        // Always cleanly stop any prior scan before starting a new one
+        stopScan()
+
         _connectionState.value = BleConnectionState.Scanning
         setStatus("주변 BLE 기기를 검색하는 중입니다...", "busy")
         _scannedDevices.value = emptyList()
@@ -259,7 +279,7 @@ class BleViewModel(application: Application) : AndroidViewModel(application) {
                 }
             } catch (_: Exception) {}
 
-            val scanCallback = object : ScanCallback() {
+            val callback = object : ScanCallback() {
                 override fun onScanResult(callbackType: Int, result: ScanResult?) {
                     result?.device?.let { dev ->
                         val recordName = result.scanRecord?.deviceName
@@ -299,31 +319,32 @@ class BleViewModel(application: Application) : AndroidViewModel(application) {
                 override fun onScanFailed(errorCode: Int) {
                     setStatus("스캔 실패: 코드 $errorCode", "error")
                     addLog(BleLogType.ERROR, "스캔 실패: $errorCode")
-                    _connectionState.value = BleConnectionState.Disconnected
+                    stopScan()
                 }
             }
+
+            activeScanCallback = callback
 
             val scanSettings = ScanSettings.Builder()
                 .setScanMode(ScanSettings.SCAN_MODE_LOW_LATENCY)
                 .setReportDelay(0)
                 .build()
-            scanner.startScan(null, scanSettings, scanCallback)
-            viewModelScope.launch {
-                delay(10000)
-                try {
-                    scanner.stopScan(scanCallback)
-                } catch (_: Exception) {}
-                _connectionState.value = BleConnectionState.Disconnected
-                setStatus("검색 완료: ${foundList.size}개 기기 발견", "success")
+
+            scanner.startScan(null, scanSettings, callback)
+
+            scanJob = viewModelScope.launch {
+                delay(12000)
+                stopScan()
+                setStatus("검색 완료: ${foundList.size}개 기기 발견 (다시 검색 가능)", "success")
             }
         } catch (e: SecurityException) {
+            stopScan()
             setStatus("블루투스 검색 권한이 필요합니다.", "error")
-            addLog(BleLogType.ERROR, "블루투스 권한 오류")
-            _connectionState.value = BleConnectionState.Disconnected
+            addLog(BleLogType.ERROR, "블루투스 권한 오류: ${e.message}")
         } catch (e: Exception) {
+            stopScan()
             setStatus("스캔 예외 발생: ${e.message}", "error")
             addLog(BleLogType.ERROR, "스캔 오류: ${e.message}")
-            _connectionState.value = BleConnectionState.Disconnected
         }
     }
 
@@ -1100,6 +1121,7 @@ class BleViewModel(application: Application) : AndroidViewModel(application) {
 
     override fun onCleared() {
         super.onCleared()
+        stopScan()
         disconnect()
     }
 }

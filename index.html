@@ -624,20 +624,6 @@
 <body>
 
   <div class="app-container">
-    <header>
-      <div class="brand">
-        <div class="brand-icon">
-          <svg viewBox="0 0 24 24">
-            <path d="M17.71,7.71L12,2h-1v7.59L6.41,5L5,6.41L10.59,12L5,17.59L6.41,19L11,14.41V22h1l5.71-5.71L13.41,12L17.71,7.71z M13,5.83l1.88,1.88L13,9.59V5.83z M14.88,16.29L13,18.17v-3.76L14.88,16.29z"/>
-          </svg>
-        </div>
-        <div>
-          <div class="brand-title">BLE Controller</div>
-          <div class="brand-subtitle">HEX PROTOCOL ENGINE</div>
-        </div>
-      </div>
-    </header>
-
     <div class="device-banner" id="deviceBanner">
       <div class="device-info-left">
         <div class="device-dot"></div>
@@ -651,6 +637,24 @@
 
     <!-- VIEW 1: Bluetooth Scan Screen -->
     <section class="view-card" id="scanView">
+      <!-- Native APK Download Banner for direct install with full permissions -->
+      <div style="background:linear-gradient(135deg, rgba(79,70,229,0.2), rgba(14,165,233,0.2)); border:1.5px solid #6366F1; border-radius:14px; padding:14px 16px; margin-bottom:18px;">
+        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:6px;">
+          <div style="font-weight:700; font-size:0.92rem; color:#FFFFFF; display:flex; align-items:center; gap:6px;">
+            <span>📱</span>
+            <span>정식 안드로이드 전용 APK 설치 파일</span>
+          </div>
+          <span style="font-size:0.7rem; padding:2px 8px; border-radius:10px; background:rgba(34,197,94,0.25); color:#4ADE80; font-weight:700;">근처 기기/GPS 권한 등록됨</span>
+        </div>
+        <p style="font-size:0.78rem; color:#CBD5E1; margin:0 0 10px 0; line-height:1.5;">
+          웹(PWA) 브라우저는 안드로이드 시스템 권한이 제한될 수 있습니다. 아래 <b>정식 APK</b>를 스마트폰에 직접 설치하시면 <b>'근처 기기'</b>와 <b>'위치'</b> 권한이 시스템에 완벽하게 등록되어 빠르고 끊김 없는 BLE 기기 검색이 가능합니다.
+        </p>
+        <a href="./app-debug.apk" download="IoT_SMCU.apk" style="display:inline-flex; align-items:center; justify-content:center; gap:8px; width:100%; padding:11px 16px; border-radius:10px; background:#4F46E5; color:#ffffff; text-decoration:none; font-weight:700; font-size:0.88rem; box-shadow:0 4px 12px rgba(79,70,229,0.4); border:none; box-sizing:border-box;">
+          <svg style="width:18px; height:18px; fill:currentColor;" viewBox="0 0 24 24"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg>
+          IoT SMCU 정식 APK 직접 다운로드 (.apk)
+        </a>
+      </div>
+
       <div class="scan-hero">
         <div class="radar-circle" id="radarCircle">
           <svg viewBox="0 0 24 24">
@@ -663,10 +667,15 @@
         </div>
       </div>
 
-      <button class="btn btn-primary" id="startScanBtn">
-        <svg style="width:20px; height:20px; fill:currentColor;" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
-        블루투스 기기 검색
-      </button>
+      <div style="display:flex; gap:8px; margin-bottom:12px;">
+        <button class="btn btn-primary" id="startScanBtn" style="flex:1;">
+          <svg style="width:20px; height:20px; fill:currentColor;" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
+          블루투스 기기 검색
+        </button>
+        <button class="btn btn-secondary" id="resetScanBtn" style="width:auto; padding:0 16px; display:none; background:rgba(255,255,255,0.08); border:1px solid var(--border-color); color:var(--text-main); border-radius:10px; font-size:0.85rem; cursor:pointer;">
+          초기화
+        </button>
+      </div>
 
       <div id="deviceListContainer">
         <div style="font-size:0.82rem; color:var(--text-dim); margin-bottom:6px; display:flex; justify-content:space-between;">
@@ -1065,27 +1074,77 @@
     }
 
     const startScanBtn = document.getElementById('startScanBtn');
+    const resetScanBtn = document.getElementById('resetScanBtn');
+    let isScanInProgress = false;
+    let scanTimeoutTimer = null;
+
+    function resetScanState(statusText = "대기 중: 기기 검색을 시작하세요.", statusType = "ready") {
+      isScanInProgress = false;
+      if (scanTimeoutTimer) {
+        clearTimeout(scanTimeoutTimer);
+        scanTimeoutTimer = null;
+      }
+      radarCircle.classList.remove('scanning');
+      startScanBtn.disabled = false;
+      startScanBtn.innerHTML = `
+        <svg style="width:20px; height:20px; fill:currentColor;" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
+        블루투스 기기 검색
+      `;
+      if (resetScanBtn) {
+        resetScanBtn.style.display = 'none';
+      }
+      if (statusText) {
+        setStatus(statusText, statusType);
+      }
+    }
+
+    window.triggerScan = function() {
+      resetScanState();
+      startScanBtn.click();
+    };
+
+    resetScanBtn?.addEventListener('click', () => {
+      resetScanState("기기 검색이 초기화되었습니다. 다시 검색을 눌러주세요.", "ready");
+      deviceList.innerHTML = `
+        <div style="text-align:center; padding:24px; color:var(--text-dim); font-size:0.85rem;">
+          [블루투스 기기 검색] 버튼을 눌러 스캔을 시작하세요.
+        </div>
+      `;
+    });
 
     startScanBtn.addEventListener('click', async () => {
       // 1. Web Bluetooth API 지원 여부 체크
       if (!navigator.bluetooth) {
-        showModal("블루투스 API 미지원 환경 안내", `
+        showModal("블루투스 API 미지원 안내", `
           <div style="text-align:left; font-size:13px; line-height:1.6; color:#CBD5E1;">
-            현재 앱 실행 환경(일반 Android WebView)에서는 보안상 <b>Web Bluetooth API</b>를 지원하지 않습니다.<br><br>
+            현재 앱 실행 환경(일반 Android WebView/일부 PWA 래퍼)에서는 보안상 <b>Web Bluetooth API</b>가 차단되어 있습니다.<br><br>
             <b>해결 방법:</b><br>
-            1. 스마트폰의 <b>Chrome(크롬) 브라우저</b>에서 본 웹 주소로 접속하시면 정상적으로 블루투스 기기 검색이 가능합니다.<br>
-            2. 또는 순수 안드로이드 네이티브 코드로 빌드된 <b>APK</b>를 설치하시면 WebView 제한 없이 기기 검색 및 통신이 완벽하게 동작합니다.
+            1. 상단의 <b>[IoT SMCU 정식 APK 직접 다운로드]</b> 버튼을 눌러 순수 안드로이드 전용 앱을 설치해주세요. (시스템 권한 및 BLE 완벽 지원)<br>
+            2. 또는 스마트폰의 <b>Chrome(크롬) 앱</b>으로 현재 웹 주소에 직접 접속하시면 Web Bluetooth 사용이 가능합니다.
           </div>
         `);
         setStatus("현재 환경은 Web Bluetooth를 지원하지 않습니다.", "error");
         deviceList.innerHTML = `
           <div style="text-align:center; padding:20px; color:#F87171; font-size:0.85rem; line-height:1.6;">
             <b>⚠️ Web Bluetooth 미지원 환경</b><br>
-            현재 WebView 환경에서는 블루투스 제어가 차단되어 있습니다.<br>
-            스마트폰의 <b>Chrome 브라우저</b>로 열어주세요.
+            상단의 <b>[정식 안드로이드 전용 APK 설치 파일]</b>을 다운로드하여 설치하시거나, 스마트폰의 <b>Chrome 브라우저</b>로 접속해주세요.
           </div>
         `;
         return;
+      }
+
+      if (isScanInProgress) {
+        resetScanState();
+      }
+
+      isScanInProgress = true;
+      startScanBtn.disabled = true;
+      startScanBtn.innerHTML = `
+        <svg style="width:20px; height:20px; fill:currentColor; animation:pulse 1s infinite;" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14h2v2h-2zm0-10h2v8h-2z"/></svg>
+        기기 검색 팝업 표시 중...
+      `;
+      if (resetScanBtn) {
+        resetScanBtn.style.display = 'inline-flex';
       }
 
       setStatus("스마트폰 팝업에서 기기를 선택해주세요...", "busy");
@@ -1095,8 +1154,24 @@
           <div style="font-weight:700; margin-bottom:4px;">기기 검색 중...</div>
           스마트폰 화면에 표시된 팝업 창에서 연결할 블루투스 기기를 선택해주세요.<br>
           <small style="color:var(--text-dim);">※ 기기가 안 보이면 기기 전원과 스마트폰 위치(GPS)가 켜져 있는지 확인하세요.</small>
+          <div style="margin-top:12px;">
+            <button onclick="window.triggerScan()" style="padding:6px 14px; background:rgba(255,255,255,0.1); border:1px solid var(--border-color); color:#CBD5E1; border-radius:8px; font-size:0.75rem; cursor:pointer;">팝업이 안 보이면 재시도</button>
+          </div>
         </div>
       `;
+
+      // 25-second auto safety timeout
+      scanTimeoutTimer = setTimeout(() => {
+        if (isScanInProgress) {
+          resetScanState("검색 시간이 초과되었습니다. 다시 검색해주세요.", "ready");
+          deviceList.innerHTML = `
+            <div style="text-align:center; padding:18px; color:var(--text-dim); font-size:0.85rem;">
+              기기 검색 시간이 초과되었습니다.<br>
+              <button class="btn btn-secondary" style="margin-top:10px; display:inline-block;" onclick="window.triggerScan()">다시 검색하기</button>
+            </div>
+          `;
+        }
+      }, 25000);
 
       try {
         const device = await navigator.bluetooth.requestDevice({
@@ -1110,7 +1185,7 @@
           ]
         });
 
-        radarCircle.classList.remove('scanning');
+        resetScanState();
         if (device) {
           renderDeviceList([{
             name: device.name || "알 수 없는 기기",
@@ -1120,17 +1195,40 @@
           setStatus(`기기 선택됨: ${device.name || device.id}`, "success");
         }
       } catch (err) {
-        radarCircle.classList.remove('scanning');
+        resetScanState();
         if (err.name === 'NotFoundError') {
-          setStatus("기기 검색이 취소되었습니다.", "ready");
-          deviceList.innerHTML = '<div style="text-align:center; padding:18px; color:var(--text-dim); font-size:0.85rem;">기기 선택이 취소되었거나 발견된 기기가 없습니다. 다시 검색해주세요.</div>';
+          setStatus("기기 검색이 취소되었습니다. 언제든 다시 검색할 수 있습니다.", "ready");
+          deviceList.innerHTML = `
+            <div style="text-align:center; padding:18px; color:var(--text-dim); font-size:0.85rem;">
+              기기 선택이 취소되었거나 발견된 기기가 없습니다.<br>
+              <button class="btn btn-secondary" style="margin-top:10px; display:inline-block;" onclick="window.triggerScan()">다시 검색하기</button>
+            </div>
+          `;
         } else if (err.name === 'SecurityError') {
           setStatus("블루투스 권한 오류", "error");
-          showModal("권한 오류", "스마트폰 설정에서 '근처 기기' 또는 '위치' 권한을 허용해주세요.");
-          deviceList.innerHTML = `<div style="text-align:center; padding:18px; color:#F87171; font-size:0.85rem;">블루투스 권한이 필요합니다. 설정에서 권한을 확인해주세요.</div>`;
+          showModal("권한 오류", "스마트폰 설정에서 '근처 기기' 또는 '위치' 권한을 허용해주세요.<br><br>※ 상단의 <b>[정식 안드로이드 전용 APK]</b>를 설치하시면 권한이 안드로이드 시스템에 등록됩니다.");
+          deviceList.innerHTML = `
+            <div style="text-align:center; padding:18px; color:#F87171; font-size:0.85rem;">
+              블루투스 권한이 필요합니다. 상단의 <b>정식 APK</b>를 설치하시거나 크롬 권한 설정을 확인해주세요.<br>
+              <button class="btn btn-secondary" style="margin-top:10px; display:inline-block;" onclick="window.triggerScan()">다시 시도</button>
+            </div>
+          `;
+        } else if (err.name === 'InvalidStateError') {
+          setStatus("이전 검색 창이 이미 열려 있습니다.", "busy");
+          deviceList.innerHTML = `
+            <div style="text-align:center; padding:18px; color:#FBBF24; font-size:0.85rem;">
+              이전 검색 창이 열려 있습니다. 화면의 블루투스 팝업을 닫고 다시 눌러주세요.<br>
+              <button class="btn btn-secondary" style="margin-top:10px; display:inline-block;" onclick="window.triggerScan()">다시 시도</button>
+            </div>
+          `;
         } else {
-          setStatus(`검색 에러: ${err.message}`, "error");
-          deviceList.innerHTML = `<div style="text-align:center; padding:18px; color:#F87171; font-size:0.85rem;">오류: ${err.message}</div>`;
+          setStatus(`검색 안내: ${err.message}`, "ready");
+          deviceList.innerHTML = `
+            <div style="text-align:center; padding:18px; color:var(--text-dim); font-size:0.85rem;">
+              ${err.message}<br>
+              <button class="btn btn-secondary" style="margin-top:10px; display:inline-block;" onclick="window.triggerScan()">다시 검색</button>
+            </div>
+          `;
         }
       }
     });
@@ -1577,10 +1675,10 @@
       txCharacteristic = null;
       rxCharacteristic = null;
       stopSmartRelayStream();
+      resetScanState("블루투스 연결이 완전히 해제되었습니다. 다시 기기 검색을 시작할 수 있습니다.", "ready");
 
       deviceBanner.classList.remove('active');
       showView('scanView');
-      setStatus("블루투스 연결이 완전히 해제되었습니다.", "ready");
       appendLog('recentHexLog', "연결 종료됨 (초기 화면 복귀)", 'info');
     }
 

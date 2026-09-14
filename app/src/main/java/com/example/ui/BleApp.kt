@@ -387,36 +387,60 @@ fun BleScanScreen(viewModel: BleViewModel) {
                 )
             }
 
-            // Scan Button
-            Button(
-                onClick = { viewModel.startScan() },
-                enabled = !isScanning,
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = BlePrimary,
-                    contentColor = BlePrimaryContainer
-                ),
-                shape = RoundedCornerShape(16.dp),
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(52.dp)
-                    .testTag("scan_button")
+            // Scan Button & Stop Button
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
+                Button(
+                    onClick = { viewModel.startScan() },
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = BlePrimary,
+                        contentColor = BlePrimaryContainer
+                    ),
+                    shape = RoundedCornerShape(16.dp),
+                    modifier = Modifier
+                        .weight(1f)
+                        .height(52.dp)
+                        .testTag("scan_button")
+                ) {
+                    if (isScanning) {
+                        CircularProgressIndicator(
+                            color = BlePrimaryContainer,
+                            modifier = Modifier.size(20.dp),
+                            strokeWidth = 2.dp
+                        )
+                        Spacer(modifier = Modifier.width(10.dp))
+                        Text("재검색 / 진행 중...", fontWeight = FontWeight.Bold, fontSize = 15.sp)
+                    } else {
+                        Icon(
+                            imageVector = Icons.Default.BluetoothSearching,
+                            contentDescription = null,
+                            modifier = Modifier.size(20.dp)
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text("블루투스 기기 검색", fontWeight = FontWeight.Bold, fontSize = 15.sp)
+                    }
+                }
+
                 if (isScanning) {
-                    CircularProgressIndicator(
-                        color = BlePrimaryContainer,
-                        modifier = Modifier.size(20.dp),
-                        strokeWidth = 2.dp
-                    )
-                    Spacer(modifier = Modifier.width(10.dp))
-                    Text("검색 중...", fontWeight = FontWeight.Bold, fontSize = 15.sp)
-                } else {
-                    Icon(
-                        imageVector = Icons.Default.BluetoothSearching,
-                        contentDescription = null,
-                        modifier = Modifier.size(20.dp)
-                    )
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text("블루투스 기기 검색", fontWeight = FontWeight.Bold, fontSize = 15.sp)
+                    Button(
+                        onClick = { viewModel.stopScan() },
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = BleSurfaceVariant,
+                            contentColor = BleTextMain
+                        ),
+                        shape = RoundedCornerShape(16.dp),
+                        modifier = Modifier.height(52.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Stop,
+                            contentDescription = "중지",
+                            modifier = Modifier.size(18.dp)
+                        )
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Text("중지", fontSize = 13.sp)
+                    }
                 }
             }
 
