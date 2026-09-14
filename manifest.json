@@ -1,6 +1,9 @@
 {
   "name": "블루투스 제어기",
-  "short_name": "BT제어기",
+  "short_name": "IoT SMCU",
+  "description": "IoT SMCU 앱입니다.",
+  "orientation": "portrait",
+  "id": "/IoT_SMCU_Controller/",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#ffffff",
