@@ -1724,5 +1724,20 @@
 
     updateSmcuCalculations();
   </script>
+
+  <script>
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      // 주의: sw.js 파일이 index.html과 같은 위치(폴더)에 있어야 합니다.
+      navigator.serviceWorker.register('./sw.js')
+        .then((registration) => {
+          console.log('서비스 워커 등록 성공:', registration.scope);
+        })
+        .catch((error) => {
+          console.error('서비스 워커 등록 실패:', error);
+        });
+    });
+  }
+</script>
 </body>
 </html>
