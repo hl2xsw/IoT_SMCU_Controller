@@ -240,6 +240,25 @@ class BleViewModel(application: Application) : AndroidViewModel(application) {
                 _scannedDevices.value = sorted
             }
 
+            // Add already bonded (paired) devices so user can immediately connect if previously paired
+            try {
+                bluetoothAdapter.bondedDevices?.forEach { dev ->
+                    val devName = dev.name ?: "페어링된 기기 (${dev.address.takeLast(5)})"
+                    val item = BleDeviceItem(
+                        name = devName,
+                        address = dev.address,
+                        rssi = -50,
+                        realDevice = dev
+                    )
+                    if (foundList.none { it.address == dev.address }) {
+                        foundList.add(item)
+                    }
+                }
+                if (foundList.isNotEmpty()) {
+                    updateSortedDevices()
+                }
+            } catch (_: Exception) {}
+
             val scanCallback = object : ScanCallback() {
                 override fun onScanResult(callbackType: Int, result: ScanResult?) {
                     result?.device?.let { dev ->
@@ -271,6 +290,12 @@ class BleViewModel(application: Application) : AndroidViewModel(application) {
                     }
                 }
 
+                override fun onBatchScanResults(results: MutableList<ScanResult>?) {
+                    results?.forEach { res ->
+                        onScanResult(ScanSettings.CALLBACK_TYPE_ALL_MATCHES, res)
+                    }
+                }
+
                 override fun onScanFailed(errorCode: Int) {
                     setStatus("스캔 실패: 코드 $errorCode", "error")
                     addLog(BleLogType.ERROR, "스캔 실패: $errorCode")
@@ -280,6 +305,7 @@ class BleViewModel(application: Application) : AndroidViewModel(application) {
 
             val scanSettings = ScanSettings.Builder()
                 .setScanMode(ScanSettings.SCAN_MODE_LOW_LATENCY)
+                .setReportDelay(0)
                 .build()
             scanner.startScan(null, scanSettings, scanCallback)
             viewModelScope.launch {
