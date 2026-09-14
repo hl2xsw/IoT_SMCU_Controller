@@ -10,7 +10,7 @@
   "theme_color": "#000000",
   "icons": [
     {
-      "src": "https://www.pwabuilder.com/assets/icons/icon_512.png",
+      "src": "./launchericon-512x512.png",
       "sizes": "512x512",
       "type": "image/png"
     }
