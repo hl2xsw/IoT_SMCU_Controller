@@ -1,5 +1,5 @@
 // IoT SMCU Service Worker with auto cache invalidation
-const CACHE = "iot-smcu-v3";
+const CACHE = "iot-smcu-v4";
 
 importScripts('https://storage.googleapis.com/workbox-cdn/releases/5.1.2/workbox-sw.js');
 
