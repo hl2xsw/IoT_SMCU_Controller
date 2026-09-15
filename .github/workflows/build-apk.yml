@@ -19,14 +19,19 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
-      # 에러에서 요구한 9.3.1 버전으로 수정합니다.
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: '9.3.1'
 
+      # [추가됨] 1. 빌드 전 서버에 임시 인증서(debug.keystore)를 자동 생성합니다.
+      - name: Generate Debug Keystore
+        run: |
+          keytool -genkey -v -keystore debug.keystore -storepass android -alias androiddebugkey -keypass android -keyalg RSA -keysize 2048 -validity 10000 -dname "CN=Android Debug,O=Android,C=US"
+
+      # [수정됨] 2. 화면 없는 모드(-Djava.awt.headless=true)를 추가하여 AWT 에러를 방지합니다.
       - name: Build Debug APK
-        run: gradle assembleDebug
+        run: gradle assembleDebug -Djava.awt.headless=true
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
