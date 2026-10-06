@@ -808,29 +808,6 @@
         </div>
       </div>
 
-      <!-- Smartphone Essential Troubleshooting Notice -->
-      <div style="background:rgba(255,217,147,0.06); border:1px solid rgba(255,217,147,0.25); border-radius:12px; padding:10px 14px; margin-top:2px;">
-        <div style="display:flex; justify-content:space-between; align-items:center; cursor:pointer;" onclick="togglePhoneGuide()">
-          <span style="font-size:12px; font-weight:700; color:var(--amber); display:flex; align-items:center; gap:6px;">
-            <span>💡</span> 스마트폰 검색창 즉시 닫힘 해결 (위치 GPS & 노트북 1:1 연결 해제)
-          </span>
-          <span style="font-size:11px; color:var(--primary); font-weight:700;">[상세보기 ▼]</span>
-        </div>
-      </div>
-
-      <!-- Native Android App Direct APK Install Notice -->
-      <div style="background:rgba(128,226,184,0.06); border:1px solid rgba(128,226,184,0.25); border-radius:12px; padding:10px 14px; display:flex; justify-content:space-between; align-items:center;">
-        <div style="display:flex; align-items:center; gap:8px;">
-          <span style="font-size:16px;">📱</span>
-          <div style="font-size:12px; color:var(--text-main);">
-            <b>스마트폰 사용자:</b> 브라우저 제약 없는 <b>정식 안드로이드 앱</b> 설치 권장
-          </div>
-        </div>
-        <a href="/app-debug.apk" download style="background:var(--mint); color:var(--bg-main); font-weight:700; font-size:11px; padding:6px 12px; border-radius:8px; text-decoration:none; white-space:nowrap; box-shadow:0 2px 8px rgba(128,226,184,0.3);">
-          APK 받기
-        </a>
-      </div>
-
       <!-- Connecting Progress Banner -->
       <div id="connectingProgressCard" style="display:none; background:rgba(56,30,114,0.4); border:1px solid var(--primary); border-radius:16px; padding:14px;">
         <div style="display:flex; align-items:center; gap:12px;">
@@ -856,41 +833,7 @@
         </div>
       </div>
 
-      <!-- Smartphone Troubleshooting & Help Card -->
-      <div id="phoneTroubleGuide" style="display:none; background:rgba(255,217,147,0.08); border:1px solid rgba(255,217,147,0.35); border-radius:16px; padding:16px; margin-top:12px;">
-        <div style="display:flex; align-items:center; gap:8px; font-size:13px; font-weight:700; color:var(--amber); margin-bottom:10px;">
-          <svg width="20" height="20" viewBox="0 0 24 24" style="fill:currentColor;"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg>
-          <span>스마트폰에서 블루투스 검색창이 바로 닫힐 때 점검사항</span>
-        </div>
-        <div style="font-size:12px; color:var(--text-main); line-height:1.7;">
-          <div style="margin-bottom:8px; padding-bottom:6px; border-bottom:1px solid rgba(255,255,255,0.06);">
-            <b>1. 스마트폰 상단바 '위치(GPS)' 켜기 (핵심 원인!)</b><br>
-            <span style="color:var(--text-muted);">안드로이드 OS 보안 정책상 GPS(위치)가 꺼져 있으면 기기 검색창이 열리자마자 0.1초 만에 즉시 취소됩니다. 스마트폰 상단 퀵패널을 내려 <b>'위치'</b>를 반드시 켜주세요.</span>
-          </div>
-          <div style="margin-bottom:8px; padding-bottom:6px; border-bottom:1px solid rgba(255,255,255,0.06);">
-            <b>2. 노트북 블루투스 연결 해제하기</b><br>
-            <span style="color:var(--text-muted);">BLE 모듈은 1:1 통신만 가능합니다. 노트북에 이미 연결되어 있다면 스마트폰에서는 기기가 검색되지 않습니다. 노트북에서 먼저 [연결 해제]를 눌러주세요.</span>
-          </div>
-          <div style="margin-bottom:8px; padding-bottom:6px; border-bottom:1px solid rgba(255,255,255,0.06);">
-            <b>3. Chrome 브라우저 권한 확인</b><br>
-            <span style="color:var(--text-muted);">스마트폰 [설정] &gt; [애플리케이션] &gt; [Chrome] &gt; [권한]에서 <b>'근처 기기'</b> 및 <b>'위치'</b> 권한을 허용해주세요.</span>
-          </div>
-          <div>
-            <b>4. 📱 정식 안드로이드 앱 (APK) 설치 권장</b><br>
-            <span style="color:var(--text-muted);">웹 브라우저의 블루투스 제약 없이 100% 안정적으로 연결하려면 상단의 <b>[APK 받기]</b>를 눌러 네이티브 앱을 설치하세요. (안드로이드 앱에서는 권한 다이얼로그가 자동 제공됩니다)</span>
-          </div>
-        </div>
-        <div style="display:flex; gap:8px; margin-top:14px; flex-wrap:wrap;">
-          <button class="btn btn-primary" onclick="performFilterScan()" style="flex:1; min-width:140px; height:40px; font-size:12px;">
-            ⚡ SMCU 필터로 재검색
-          </button>
-          <button class="btn btn-secondary" onclick="simulateConnect()" style="flex:1; min-width:140px; height:40px; font-size:12px;">
-            🧪 가상 시뮬레이션 연결
-          </button>
-        </div>
       </div>
-
-    </div>
   </div>
 
   <!-- ============================================================= -->
@@ -1348,6 +1291,7 @@
   // Protocol state
   let smcuId = 0;
   let smcuUploadedId = null;
+  let isWaitingForSmcuUpload = false;
   let tcpIp = "192.168.10.1";
   let tcpGw = "192.168.10.1";
   let tcpSub = "255.255.255.0";
@@ -2084,13 +2028,16 @@
       return;
     }
 
-    // 4) SMCU ID upload response (13th byte, Index 12)
-    if (activeScreen === 'smcuScreen' && packet.length >= 13) {
+    // 4) SMCU ID upload response (13th byte, Index 12) - 업로드(0xBE) 응답일 때만 데이터 갱신
+    if (activeScreen === 'smcuScreen' && isWaitingForSmcuUpload && packet.length >= 13 && packet[3] === 0xBE) {
+      isWaitingForSmcuUpload = false;
       const readId = packet[12] & 0xFF;
       smcuUploadedId = readId;
-      document.getElementById('smcuUploadedBanner').style.display = 'block';
-      document.getElementById('smcuUploadedText').textContent = `${readId} (HEX: 0x${('0' + readId.toString(16).toUpperCase()).slice(-2)})`;
-      setStatus(`SMCU ID 업로드 완료: ID=${readId}`, "info");
+      const banner = document.getElementById('smcuUploadedBanner');
+      if (banner) banner.style.display = 'block';
+      const textEl = document.getElementById('smcuUploadedText');
+      if (textEl) textEl.textContent = `${readId} (HEX: 0x${('0' + readId.toString(16).toUpperCase()).slice(-2)})`;
+      setStatus(`SMCU ID 업로드 확인 완료: ID=${readId}`, "info");
       return;
     }
 
@@ -2160,9 +2107,9 @@
         resp[28] = 0x03; resp[29] = 0x03; resp[30] = 0xFC; resp[31] = 0xFC;
         handleIncomingBytes(resp);
       }
-      // SMCU download / TCP download echo (0xDE)
+      // SMCU download echo (0xDE) - 다운로드 시에는 업로드 결과 화면을 갱신하지 않음
       else if (txPacket[3] === 0xDE) {
-        handleIncomingBytes(txPacket);
+        // Download acknowledged, do not update upload banner
       }
     }, 150);
   }
@@ -2263,6 +2210,7 @@
     smcuDownloadBtn.onclick = async () => {
       if (smcuDownloadBtn.disabled) return;
       smcuDownloadBtn.disabled = true;
+      isWaitingForSmcuUpload = false;
       try {
         const { id, cs, packet } = updateSmcuCalculations();
         setStatus(`SMCU ID ${id} 다운로드 패킷 (32바이트) 20B 분할 전송 중...`, "busy");
@@ -2283,6 +2231,7 @@
   const smcuUploadBtn = document.getElementById('smcuUploadBtn');
   if (smcuUploadBtn) {
     smcuUploadBtn.onclick = async () => {
+      isWaitingForSmcuUpload = true;
       setStatus("SMCU ID 업로드 요청 패킷 송신 중...", "busy");
       const uploadPacket = [0x02, 0x63, 0xFB, 0xBE, 0x00, 0x03, 0x01, 0x00, 0x00, 0x24, 0x03, 0x03, 0xFC, 0xFC];
       await sendPacket(uploadPacket, 'smcuLogContainer');
