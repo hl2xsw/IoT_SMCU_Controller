@@ -1,6 +1,5 @@
 // IoT SMCU Service Worker with auto cache invalidation
-const CACHE = "iot-smcu-v4";
-
+const CACHE = "iot-smcu-v6-direct-scan";
 importScripts('https://storage.googleapis.com/workbox-cdn/releases/5.1.2/workbox-sw.js');
 
 self.addEventListener("message", (event) => {
@@ -25,4 +24,3 @@ workbox.routing.registerRoute(
     cacheName: CACHE
   })
 );
-
