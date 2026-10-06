@@ -1,0 +1,13 @@
+{
+  "name": "iot-smcu-web",
+  "version": "1.0.0",
+  "description": "BLE SMCU and SmartRelay Controller Web Application",
+  "main": "server.js",
+  "scripts": {
+    "dev": "node server.js",
+    "start": "node server.js"
+  },
+  "keywords": ["ble", "smcu", "smartrelay"],
+  "author": "",
+  "license": "MIT"
+}

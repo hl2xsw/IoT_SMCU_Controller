@@ -922,23 +922,40 @@
 
       <div style="display:flex; flex-direction:column; gap:8px;">
         <div style="display:flex; justify-content:space-between; align-items:center;">
-          <span style="font-size:13px; color:var(--text-muted);">설정할 SMCU ID (0 ~ 255)</span>
-          <span style="font-family:var(--font-mono); font-size:12px; font-weight:700; color:var(--cyan);" id="smcuHexPreview">HEX: 0x00</span>
+          <span style="font-size:13px; font-weight:700; color:var(--text-main);">Target SMCU ID</span>
+          <span style="font-family:var(--font-mono); font-size:12px; font-weight:700; color:var(--cyan);" id="smcuHexPreview">HEX: 0x01</span>
         </div>
         
         <div class="stepper-row">
           <button class="stepper-btn" id="smcuMinusBtn">-</button>
-          <input type="number" class="stepper-input" id="smcuIdInput" min="0" max="255" value="0">
+          <input type="number" class="stepper-input" id="smcuIdInput" min="0" max="255" value="1">
           <button class="stepper-btn" id="smcuPlusBtn">+</button>
         </div>
 
         <div class="chip-row">
-          <div class="preset-chip" onclick="setSmcuPreset(0)">ID 0</div>
-          <div class="preset-chip" onclick="setSmcuPreset(64)">ID 64</div>
-          <div class="preset-chip" onclick="setSmcuPreset(128)">ID 128</div>
-          <div class="preset-chip" onclick="setSmcuPreset(192)">ID 192</div>
-          <div class="preset-chip" onclick="setSmcuPreset(255)">ID 255</div>
+          <div class="preset-chip" onclick="setSmcuPreset(1)">ID: 1</div>
+          <div class="preset-chip" onclick="setSmcuPreset(2)">ID: 2</div>
+          <div class="preset-chip" onclick="setSmcuPreset(3)">ID: 3</div>
+          <div class="preset-chip" onclick="setSmcuPreset(4)">ID: 4</div>
+          <div class="preset-chip" onclick="setSmcuPreset(0)">ID: 0</div>
+          <div class="preset-chip" onclick="setSmcuPreset(128)">ID: 128</div>
+          <div class="preset-chip" onclick="setSmcuPreset(255)">ID: 255</div>
         </div>
+      </div>
+
+      <!-- Uploaded Result Banner -->
+      <div id="smcuUploadedBanner" style="display:none; background:rgba(128,226,184,0.12); border:1px solid rgba(128,226,184,0.4); border-radius:12px; padding:12px 14px;">
+        <div style="font-size:11px; color:var(--text-muted); font-weight:600;">업로드 확인된 SMCU ID (13번째 바이트)</div>
+        <div style="font-size:18px; font-weight:800; font-family:var(--font-mono); color:var(--mint); margin-top:4px;" id="smcuUploadedText">--</div>
+      </div>
+
+      <!-- Protocol info box -->
+      <div style="background:var(--bg-terminal); border:1px solid var(--bg-surface-variant); border-radius:12px; padding:14px; font-size:12px; color:var(--text-muted); line-height:1.6;">
+        <div style="font-weight:700; color:var(--text-main); margin-bottom:6px; font-size:12px;">패킷 계산 정보</div>
+        • 13번째 바이트 (Target ID): <span style="color:var(--primary); font-family:var(--font-mono); font-weight:700;" id="smcuByte13Info">0x01</span><br>
+        • 28번째 바이트 (XOR Checksum): <span style="color:var(--amber); font-family:var(--font-mono); font-weight:700;" id="smcuByte28Info">0xBF</span> (체크섬: 2번째~27번째 XOR)<br>
+        • 다운로드 전송 예정 패킷 (32바이트):<br>
+        <div style="font-family:var(--font-mono); font-size:10px; color:var(--mint); word-break:break-all; margin-top:4px; padding:6px 8px; background:rgba(0,0,0,0.3); border-radius:6px;" id="smcuTxPacketPreview">02 63 FB DE 00 15 12 ... 03 03 FC FC</div>
       </div>
 
       <!-- Action Buttons -->
@@ -953,24 +970,18 @@
         </button>
       </div>
 
-      <!-- Uploaded Result Banner -->
-      <div id="smcuUploadedBanner" style="display:none; background:rgba(128,226,184,0.12); border:1px solid rgba(128,226,184,0.4); border-radius:12px; padding:12px 14px;">
-        <div style="font-size:11px; color:var(--text-muted); font-weight:600;">업로드 확인된 SMCU ID (13번째 바이트)</div>
-        <div style="font-size:18px; font-weight:800; font-family:var(--font-mono); color:var(--mint); margin-top:4px;" id="smcuUploadedText">--</div>
-      </div>
-
-      <!-- Protocol info box -->
-      <div style="background:var(--bg-terminal); border:1px solid var(--bg-surface-variant); border-radius:12px; padding:12px; font-size:11px; color:var(--text-muted); line-height:1.5;">
-        • 바이트 13 (Index 12): <span style="color:var(--primary); font-family:var(--font-mono); font-weight:700;" id="smcuByte13Info">0x00</span><br>
-        • 바이트 28 (Index 27): <span style="color:var(--amber); font-family:var(--font-mono); font-weight:700;" id="smcuByte28Info">0x00</span> (체크섬: 2번째~27번째 XOR)<br>
-        • TX 패킷: <span style="font-family:var(--font-mono); font-size:10px; color:var(--text-main);" id="smcuTxPacketPreview">02 63 FB DE 00 15 12 ... 03 03 FC FC</span>
+      <div>
+        <button class="btn" id="smcuResetBtn" style="width:100%; height:44px; background:var(--bg-surface-variant); color:var(--text-muted); border:1px solid rgba(255,255,255,0.08); font-size:13px; font-weight:600;">
+          <svg width="16" height="16" viewBox="0 0 24 24" style="fill:currentColor;"><path d="M12 5V1L7 6l5 5V7c3.31 0 6 2.69 6 6s-2.69 6-6 6-6-2.69-6-6H4c0 4.42 3.58 8 8 8s8-3.58 8-8-3.58-8-8-8z"/></svg>
+          공장 초기화
+        </button>
       </div>
 
       <!-- Hex Log Box -->
       <div class="hex-log-card">
         <div class="hex-log-header">
-          <span>송·수신 패킷 (TX / RX)</span>
-          <span style="color:var(--primary); cursor:pointer;" onclick="clearLogs('smcuLogContainer')">지우기</span>
+          <span style="font-weight:700;">실시간 패킷 로그</span>
+          <span style="color:var(--primary); cursor:pointer; font-weight:600;" onclick="clearLogs('smcuLogContainer')">지우기</span>
         </div>
         <div class="hex-log-body" id="smcuLogContainer"></div>
       </div>
@@ -1301,6 +1312,12 @@
     }
   }
 
+  function getTimestampString() {
+    const d = new Date();
+    const pad = n => ('0' + n).slice(-2);
+    return `${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
+  }
+
   function appendLog(containerId, hexStr, type = 'rx') {
     const container = document.getElementById(containerId);
     if (!container) return;
@@ -1308,13 +1325,24 @@
     const row = document.createElement('div');
     row.className = `log-line log-${type}`;
 
+    const timeSpan = document.createElement('span');
+    timeSpan.style.color = 'var(--text-muted)';
+    timeSpan.style.marginRight = '6px';
+    timeSpan.style.fontSize = '11px';
+    timeSpan.style.fontFamily = 'var(--font-mono)';
+    timeSpan.textContent = `[${getTimestampString()}]`;
+
     const tag = document.createElement('span');
     tag.className = 'log-tag';
-    tag.textContent = type.toUpperCase();
+    tag.textContent = `[${type.toUpperCase()}]`;
 
     const text = document.createElement('span');
+    text.className = 'log-text';
+    text.style.wordBreak = 'break-all';
+    text.style.marginLeft = '6px';
     text.textContent = hexStr;
 
+    row.appendChild(timeSpan);
     row.appendChild(tag);
     row.appendChild(text);
 
@@ -1569,23 +1597,52 @@
     const hexStr = toHexString(uint8);
 
     // Append to logs
-    ['smcuLogContainer', 'tcpIpLogContainer', 'srLogContainer'].forEach(cId => {
+    const logContainers = ['smcuLogContainer', 'tcpIpLogContainer', 'srLogContainer'];
+    if (targetLogContainerId && !logContainers.includes(targetLogContainerId)) {
+      logContainers.push(targetLogContainerId);
+    }
+    logContainers.forEach(cId => {
       appendLog(cId, hexStr, 'tx');
     });
 
     if (txChar) {
       try {
-        if (txChar.properties.writeWithoutResponse) {
-          await txChar.writeValueWithoutResponse(uint8);
+        // BLE ATT MTU default payload is 20 bytes (23 MTU - 3 ATT bytes).
+        // Larger packets (e.g. 32-byte SMCU / TCP download packets) MUST be chunked!
+        const CHUNK_SIZE = 20;
+        if (uint8.length <= CHUNK_SIZE) {
+          if (txChar.properties.writeWithoutResponse) {
+            await txChar.writeValueWithoutResponse(uint8);
+          } else {
+            await txChar.writeValue(uint8);
+          }
         } else {
-          await txChar.writeValue(uint8);
+          // Send in sequential chunks of at most 20 bytes
+          for (let offset = 0; offset < uint8.length; offset += CHUNK_SIZE) {
+            const chunk = uint8.slice(offset, offset + CHUNK_SIZE);
+            if (txChar.properties.writeWithoutResponse) {
+              await txChar.writeValueWithoutResponse(chunk);
+            } else {
+              await txChar.writeValue(chunk);
+            }
+            if (offset + CHUNK_SIZE < uint8.length) {
+              await new Promise(r => setTimeout(r, 25)); // 25ms delay between chunks
+            }
+          }
         }
+        return true;
       } catch (err) {
-        console.warn("TX Error:", err);
+        console.error("TX Write Error:", err);
+        logContainers.forEach(cId => {
+          appendLog(cId, , 'error');
+        });
+        setStatus(, "error");
+        return false;
       }
     } else {
-      // If simulation mode, simulate matching echo/responses for tests
+      // Simulation mode response
       simulateResponse(uint8);
+      return true;
     }
   }
 
@@ -1731,6 +1788,23 @@
         dummy[138] = 0x03; dummy[139] = 0x03; dummy[140] = 0xFC; dummy[141] = 0xFC;
         handleIncomingBytes(dummy);
       }
+      // SMCU upload response (0xBE) -> responds with 32 bytes
+      else if (txPacket[3] === 0xBE) {
+        const resp = new Uint8Array(32);
+        resp[0] = 0x02; resp[1] = 0x63; resp[2] = 0xFB; resp[3] = 0xBE;
+        resp[4] = 0x00; resp[5] = 0x15; resp[6] = 0x12; resp[7] = 0x00; resp[8] = 0x00;
+        resp[9] = 0xC0; resp[10] = 0xA8; resp[11] = 0x0A; resp[12] = smcuId || 1;
+        resp[13] = 0xC0; resp[14] = 0xA8; resp[15] = 0x0A; resp[16] = 0x01;
+        resp[17] = 0xFF; resp[18] = 0xFF; resp[19] = 0xFF; resp[20] = 0x00;
+        for (let i = 21; i <= 26; i++) resp[i] = 0xAA;
+        resp[27] = computeXorChecksum(resp, 1, 26);
+        resp[28] = 0x03; resp[29] = 0x03; resp[30] = 0xFC; resp[31] = 0xFC;
+        handleIncomingBytes(resp);
+      }
+      // SMCU download / TCP download echo (0xDE)
+      else if (txPacket[3] === 0xDE) {
+        handleIncomingBytes(txPacket);
+      }
     }, 150);
   }
 
@@ -1760,17 +1834,19 @@
   const smcuHexPreview = document.getElementById('smcuHexPreview');
 
   function updateSmcuCalculations() {
-    let id = parseInt(smcuIdInput.value) || 0;
+    let id = parseInt(smcuIdInput ? smcuIdInput.value : 1);
+    if (isNaN(id)) id = 1;
     if (id < 0) id = 0;
     if (id > 255) id = 255;
     smcuId = id;
-    smcuIdInput.value = id;
+    if (smcuIdInput) smcuIdInput.value = id;
 
     const hexStr = '0x' + ('0' + id.toString(16).toUpperCase()).slice(-2);
-    smcuHexPreview.textContent = `HEX: ${hexStr}`;
-    document.getElementById('smcuByte13Info').textContent = hexStr;
+    if (smcuHexPreview) smcuHexPreview.textContent = `HEX: ${hexStr}`;
+    const b13El = document.getElementById('smcuByte13Info');
+    if (b13El) b13El.textContent = hexStr;
 
-    // Build dummy packet to compute checksum (index 1 to 26)
+    // Build 32-byte SMCU download packet
     const packet = new Uint8Array(32);
     packet[0] = 0x02; packet[1] = 0x63; packet[2] = 0xFB; packet[3] = 0xDE;
     packet[4] = 0x00; packet[5] = 0x15; packet[6] = 0x12; packet[7] = 0x00; packet[8] = 0x00;
@@ -1782,41 +1858,69 @@
     packet[27] = cs;
     packet[28] = 0x03; packet[29] = 0x03; packet[30] = 0xFC; packet[31] = 0xFC;
 
-    document.getElementById('smcuByte28Info').textContent = '0x' + ('0' + cs.toString(16).toUpperCase()).slice(-2);
-    document.getElementById('smcuTxPacketPreview').textContent = toHexString(packet);
+    const b28El = document.getElementById('smcuByte28Info');
+    if (b28El) b28El.textContent = '0x' + ('0' + cs.toString(16).toUpperCase()).slice(-2);
+    const txPrevEl = document.getElementById('smcuTxPacketPreview');
+    if (txPrevEl) txPrevEl.textContent = toHexString(packet);
+
     return { id, cs, packet };
   }
 
-  smcuIdInput.addEventListener('input', updateSmcuCalculations);
-  document.getElementById('smcuMinusBtn').onclick = () => {
-    smcuIdInput.value = Math.max(0, (parseInt(smcuIdInput.value) || 0) - 1);
-    updateSmcuCalculations();
-  };
-  document.getElementById('smcuPlusBtn').onclick = () => {
-    smcuIdInput.value = Math.min(255, (parseInt(smcuIdInput.value) || 0) + 1);
-    updateSmcuCalculations();
-  };
-
+  if (smcuIdInput) smcuIdInput.addEventListener('input', updateSmcuCalculations);
+  const smcuMinusBtn = document.getElementById('smcuMinusBtn');
+  if (smcuMinusBtn) {
+    smcuMinusBtn.onclick = () => {
+      smcuIdInput.value = Math.max(0, (parseInt(smcuIdInput.value) || 1) - 1);
+      updateSmcuCalculations();
+    };
+  }
+  const smcuPlusBtn = document.getElementById('smcuPlusBtn');
+  if (smcuPlusBtn) {
+    smcuPlusBtn.onclick = () => {
+      smcuIdInput.value = Math.min(255, (parseInt(smcuIdInput.value) || 1) + 1);
+      updateSmcuCalculations();
+    };
+  }
   window.setSmcuPreset = function(id) {
-    smcuIdInput.value = id;
-    updateSmcuCalculations();
+    if (smcuIdInput) {
+      smcuIdInput.value = id;
+      updateSmcuCalculations();
+    }
   };
 
-  // Download (Send 32-byte SMCU ID Packet)
-  document.getElementById('smcuDownloadBtn').onclick = async () => {
-    const { id, cs, packet } = updateSmcuCalculations();
-    setStatus(`SMCU ID ${id} 다운로드 패킷 전송 중...`, "busy");
-    await sendPacket(packet, 'smcuLogContainer');
-    setStatus(`SMCU ID ${id} 다운로드 패킷 전송 완료 (체크섬: 0x${('0' + cs.toString(16).toUpperCase()).slice(-2)})`, "info");
-  };
+  // Factory reset button
+  const smcuResetBtn = document.getElementById('smcuResetBtn');
+  if (smcuResetBtn) {
+    smcuResetBtn.onclick = () => {
+      if (smcuIdInput) smcuIdInput.value = 1;
+      updateSmcuCalculations();
+      setStatus("SMCU ID가 기본값 1로 초기화되었습니다.", "info");
+    };
+  }
+
+  // Download (Send 32-byte SMCU ID Packet with BLE chunking)
+  const smcuDownloadBtn = document.getElementById('smcuDownloadBtn');
+  if (smcuDownloadBtn) {
+    smcuDownloadBtn.onclick = async () => {
+      const { id, cs, packet } = updateSmcuCalculations();
+      setStatus(`SMCU ID ${id} 다운로드 패킷 전송 중...`, "busy");
+      const ok = await sendPacket(packet, 'smcuLogContainer');
+      if (ok) {
+        setStatus(`SMCU ID ${id} 다운로드 완료 (체크섬: 0x${('0' + cs.toString(16).toUpperCase()).slice(-2)})`, "info");
+      }
+    };
+  }
 
   // Upload (Send 14-byte SMCU Request Packet)
-  document.getElementById('smcuUploadBtn').onclick = async () => {
-    setStatus("SMCU ID 업로드 요청 패킷 송신 중...", "busy");
-    const uploadPacket = [0x02, 0x63, 0xFB, 0xBE, 0x00, 0x03, 0x01, 0x00, 0x00, 0x24, 0x03, 0x03, 0xFC, 0xFC];
-    await sendPacket(uploadPacket, 'smcuLogContainer');
-    setStatus("SMCU ID 업로드 요청 패킷 송신 완료. 응답 수신 대기 중...", "info");
-  };
+  const smcuUploadBtn = document.getElementById('smcuUploadBtn');
+  if (smcuUploadBtn) {
+    smcuUploadBtn.onclick = async () => {
+      setStatus("SMCU ID 업로드 요청 패킷 송신 중...", "busy");
+      const uploadPacket = [0x02, 0x63, 0xFB, 0xBE, 0x00, 0x03, 0x01, 0x00, 0x00, 0x24, 0x03, 0x03, 0xFC, 0xFC];
+      await sendPacket(uploadPacket, 'smcuLogContainer');
+      setStatus("SMCU ID 업로드 요청 패킷 송신 완료. 응답 수신 대기 중...", "info");
+    };
+  }
 
   // ===========================================================================
   // 5. TCP/IP Settings Logic
